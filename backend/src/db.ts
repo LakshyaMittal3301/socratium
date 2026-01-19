@@ -2,61 +2,26 @@ import Database from "better-sqlite3";
 import path from "path";
 import { getDataDir } from "./paths";
 
-export type ProviderConfig = {
-  id: string;
-  name: string;
-  provider_type: string;
-  base_url: string;
-  api_key_enc: string;
-  model: string;
-  created_at: string;
-  updated_at: string;
-};
-
-export type BookRecord = {
-  id: string;
-  title: string;
-  author: string;
-  pdf_path: string;
-  text_path: string;
-  created_at: string;
-};
-
-export type SectionRecord = {
-  id: string;
-  book_id: string;
-  title: string;
-  order_index: number;
-  start_page: number;
-  end_page: number;
-  start_offset: number;
-  end_offset: number;
-  summary: string | null;
-  created_at: string;
-};
-
-export type PageMapRecord = {
-  id: string;
-  book_id: string;
-  page_number: number;
-  start_offset: number;
-  end_offset: number;
-};
-
-export type ReadingProgressRecord = {
-  id: string;
-  book_id: string;
-  current_section_id: string;
-  current_page: number;
-  last_seen_at: string;
-};
-
-const dbPath = path.join(getDataDir(), "app.db");
+const SCHEMA_VERSION = 1;
+const dbPath = path.join(getDataDir(), "socratium.db");
 export const db = new Database(dbPath);
 
 db.pragma("journal_mode = WAL");
+db.pragma("foreign_keys = ON");
 
 export function initDb(): void {
+  const currentVersion = db.pragma("user_version", { simple: true }) as number;
+  if (currentVersion !== SCHEMA_VERSION) {
+    db.exec(`
+      DROP TABLE IF EXISTS user_answer;
+      DROP TABLE IF EXISTS chat_message;
+      DROP TABLE IF EXISTS reading_progress;
+      DROP TABLE IF EXISTS section;
+      DROP TABLE IF EXISTS book;
+      DROP TABLE IF EXISTS provider_config;
+    `);
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS provider_config (
       id TEXT PRIMARY KEY,
@@ -71,65 +36,62 @@ export function initDb(): void {
 
     CREATE TABLE IF NOT EXISTS book (
       id TEXT PRIMARY KEY,
-      title TEXT,
+      title TEXT NOT NULL,
       author TEXT,
-      pdf_path TEXT,
-      text_path TEXT,
-      created_at TEXT
+      pdf_path TEXT NOT NULL,
+      text_path TEXT NOT NULL,
+      outline_json TEXT,
+      created_at TEXT NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS section (
       id TEXT PRIMARY KEY,
-      book_id TEXT,
-      title TEXT,
-      order_index INTEGER,
-      start_page INTEGER,
-      end_page INTEGER,
-      start_offset INTEGER,
-      end_offset INTEGER,
-      summary TEXT,
-      created_at TEXT
-    );
-
-    CREATE TABLE IF NOT EXISTS page_map (
-      id TEXT PRIMARY KEY,
-      book_id TEXT,
-      page_number INTEGER,
-      start_offset INTEGER,
-      end_offset INTEGER
+      book_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      order_index INTEGER NOT NULL,
+      depth INTEGER NOT NULL DEFAULT 0,
+      parent_section_id TEXT,
+      source TEXT NOT NULL DEFAULT 'toc',
+      start_page INTEGER NOT NULL,
+      end_page INTEGER NOT NULL,
+      start_offset INTEGER NOT NULL,
+      end_offset INTEGER NOT NULL,
+      status TEXT NOT NULL DEFAULT 'not_started',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY(book_id) REFERENCES book(id),
+      FOREIGN KEY(parent_section_id) REFERENCES section(id)
     );
 
     CREATE TABLE IF NOT EXISTS reading_progress (
       id TEXT PRIMARY KEY,
-      book_id TEXT,
+      book_id TEXT NOT NULL,
       current_section_id TEXT,
-      current_page INTEGER,
-      last_seen_at TEXT
+      current_page INTEGER NOT NULL DEFAULT 1,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY(book_id) REFERENCES book(id),
+      FOREIGN KEY(current_section_id) REFERENCES section(id)
     );
 
     CREATE TABLE IF NOT EXISTS chat_message (
       id TEXT PRIMARY KEY,
-      book_id TEXT,
-      section_id TEXT,
-      role TEXT,
-      message TEXT,
-      message_type TEXT,
-      created_at TEXT
+      section_id TEXT NOT NULL,
+      role TEXT NOT NULL,
+      message TEXT NOT NULL,
+      message_type TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY(section_id) REFERENCES section(id)
     );
 
     CREATE TABLE IF NOT EXISTS user_answer (
       id TEXT PRIMARY KEY,
-      section_id TEXT,
-      question TEXT,
-      answer TEXT,
-      is_complete INTEGER,
-      created_at TEXT
+      section_id TEXT NOT NULL,
+      question TEXT NOT NULL,
+      answer TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY(section_id) REFERENCES section(id)
     );
   `);
 
-  try {
-    db.prepare("ALTER TABLE provider_config ADD COLUMN provider_type TEXT").run();
-  } catch {
-    // Column already exists.
-  }
+  db.pragma(`user_version = ${SCHEMA_VERSION}`);
 }

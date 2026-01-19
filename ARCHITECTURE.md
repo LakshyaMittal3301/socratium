@@ -27,54 +27,27 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 
 ## Current System
 ### Frontend
-- Static HTML/CSS/JS in `frontend/`, served by the backend.
-- Main layout: PDF viewer center, chat panel right.
-- State lives in `frontend/app.js` with minimal client-side logic.
-- Dialogs for provider config and PDF upload.
+- React + Vite app in `frontend/`.
+- UI rewrite in progress; current focus is layout and wiring core flows.
 
 ### Backend
-- Fastify server in `backend/src/server.ts`, bound to `127.0.0.1`.
-- Static files served from `frontend/`.
-- SQLite via `better-sqlite3` in `backend/src/db.ts`.
-- PDF ingestion in `backend/src/pdf.ts`.
-- AI provider proxy in `backend/src/ai.ts`.
+- Fastify app built in `backend/src/app.ts`, started by `backend/src/server.ts`.
+- SQLite schema in `backend/src/db.ts` (reset for rewrite).
+- Only `/api/health` is wired in phase 1.
 
 ### Storage
-- `backend/data/app.db`: SQLite database.
-- `backend/data/books/*.pdf` and `backend/data/books/*.txt`: stored PDFs and extracted text.
-- `backend/data/provider.key`: local encryption key for API keys.
-- `backend/data/uploads/`: upload staging.
+- `backend/data/socratium.db`: SQLite database (rewrite schema).
+- Additional file storage (PDFs, extracted text, uploads) will be added in the ingest phase.
 
 ## Data Flow (Today)
-1. Server start: `initDb()` creates tables; `ensureDefaultBook()` ingests a default PDF if present.
-2. Frontend loads `/` and fetches `/api/books` and `/api/reading/:bookId`.
-3. Selecting a page calls `/api/books/:bookId/pages/:pageNumber/section` and saves progress.
-4. Chat actions call `/api/chat/intro`, `/api/chat/practice`, or `/api/chat/adhoc`.
-5. User answers persist via `/api/chat/answer`.
+1. Server start: `initDb()` creates tables for the rewrite schema.
+2. `/api/health` returns a basic status check.
 
 ## Sectioning Strategy (Current)
-- Extract text per page and join with blank lines.
-- Build a page map for offsets into the full text.
-- Create sections in fixed page blocks (`PAGES_PER_SECTION = 4`).
+- Not implemented in the rewrite yet; TOC-based sectioning is planned.
 
 ## API Surface (Current)
 - `GET /api/health`: server health check.
-- `GET /api/provider`: provider config status (no key returned).
-- `POST /api/provider`: save provider config and encrypted key.
-- `POST /api/provider/test`: connectivity test call.
-- `GET /api/books`: list books.
-- `GET /api/books/:bookId`: book metadata.
-- `GET /api/books/:bookId/pdf`: stream PDF.
-- `POST /api/books/upload`: upload PDF and ingest.
-- `GET /api/books/:bookId/sections`: sections for a book.
-- `GET /api/sections/:sectionId`: single section.
-- `GET /api/books/:bookId/pages/:pageNumber/section`: section for page.
-- `GET /api/reading/:bookId`: reading progress (page + section).
-- `POST /api/reading/:bookId`: update reading progress.
-- `POST /api/chat/intro`: intro prompt for a section.
-- `POST /api/chat/practice`: retrieval questions for a section.
-- `POST /api/chat/adhoc`: answer a user question with section context.
-- `POST /api/chat/answer`: store a user answer.
 
 ## AI Provider Handling
 - Provider config stored locally; API keys encrypted with AES-256-GCM.
