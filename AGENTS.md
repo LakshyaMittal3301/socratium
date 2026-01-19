@@ -63,6 +63,7 @@ Keep the MVP small and focused.
 
 ## Development principles
 - Prefer simple, readable and clean solutions
+- Go step by step; make small changes instead of multi-step implementations
 - Make small, incremental changes
 - Avoid over-engineering
 - Follow best practices
