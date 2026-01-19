@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import path from "path";
 import { getDataDir } from "../lib/paths";
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const dbPath = path.join(getDataDir(), "socratium.db");
 export const db = new Database(dbPath);
 
@@ -14,6 +14,7 @@ export function initDb(): void {
   if (currentVersion !== SCHEMA_VERSION) {
     db.exec(`
       DROP TABLE IF EXISTS app_meta;
+      DROP TABLE IF EXISTS book;
     `);
   }
 
@@ -21,6 +22,14 @@ export function initDb(): void {
     CREATE TABLE IF NOT EXISTS app_meta (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS book (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      source_filename TEXT NOT NULL,
+      pdf_path TEXT NOT NULL,
+      created_at TEXT NOT NULL
     );
   `);
 

@@ -33,7 +33,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 ### Backend
 - Fastify app built in `backend/src/app.ts`, started by `backend/src/server.ts`.
 - SQLite schema in `backend/src/db/index.ts` (reset for rewrite).
-- Only `/api/health` is wired in phase 1.
+- `/api/health` and basic book upload/list routes are wired in phase 2a.
 
 ### Backend Structure (Conventions)
 - `routes/`: Fastify route plugins (request/response handling).
@@ -44,17 +44,20 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 
 ### Storage
 - `backend/data/socratium.db`: SQLite database (rewrite schema).
-- Additional file storage (PDFs, extracted text, uploads) will be added in the ingest phase.
+- `backend/data/books/`: uploaded PDFs (ingest phase).
 
 ## Data Flow (Today)
 1. Server start: `initDb()` creates tables for the rewrite schema.
-2. `/api/health` returns a basic status check.
+2. `/api/books/upload` stores a PDF and inserts a book record.
+3. `/api/books` returns a list of uploaded books.
 
 ## Sectioning Strategy (Current)
 - Not implemented in the rewrite yet; TOC-based sectioning is planned.
 
 ## API Surface (Current)
 - `GET /api/health`: server health check.
+- `GET /api/books`: list uploaded books.
+- `POST /api/books/upload`: upload a PDF and create a book record.
 
 ## AI Provider Handling (Planned)
 - Provider config stored locally; API keys encrypted at rest.

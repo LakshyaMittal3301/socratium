@@ -29,3 +29,4 @@
 - Added `ROADMAP.md` to track direction and completed work.
 - Added `@shared/*` TypeScript alias and a sample shared type.
 - Rebuilt backend skeleton with a fresh schema and health route.
+- Added basic book storage and PDF upload/list endpoints.
