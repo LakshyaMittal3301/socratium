@@ -8,6 +8,22 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - Small, incremental changes; one feature at a time.
 - Prefer simple, readable code over abstractions.
 - Keep docs and the roadmap up to date with actual behavior.
+- Full rewrite planned; no data migration required.
+
+## Target UX (Planned)
+- Collapsible table-of-contents tree on the left.
+- Clean PDF reader centered.
+- Chat panel on the right with two modes: intro and discuss.
+- Selecting a section shows a short, problem-framing intro question.
+- User can skip or chat briefly, then mark the intro done.
+- After reading, user clicks discuss and answers 3 retrieval questions.
+- Completed sections stay accessible with no gating.
+
+## Target Sectioning (Planned)
+- Use PDF outline/TOC for primary section boundaries.
+- If a section spans too long, split by sub-headings; titles reflect logical headings.
+- Target 4-6 pages per section while respecting author structure.
+- Keep the sectioning pipeline extensible for future algorithms and user-defined sections.
 
 ## Current System
 ### Frontend
