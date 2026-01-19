@@ -49,8 +49,8 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 ## API Surface (Current)
 - `GET /api/health`: server health check.
 
-## AI Provider Handling
-- Provider config stored locally; API keys encrypted with AES-256-GCM.
+## AI Provider Handling (Planned)
+- Provider config stored locally; API keys encrypted at rest.
 - `provider_type = openai`: POST to `.../v1/chat/completions` (OpenAI-compatible).
 - `provider_type = gemini`: POST to `.../models/{model}:generateContent`.
 
