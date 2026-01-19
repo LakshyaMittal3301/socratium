@@ -32,8 +32,15 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 
 ### Backend
 - Fastify app built in `backend/src/app.ts`, started by `backend/src/server.ts`.
-- SQLite schema in `backend/src/db.ts` (reset for rewrite).
+- SQLite schema in `backend/src/db/index.ts` (reset for rewrite).
 - Only `/api/health` is wired in phase 1.
+
+### Backend Structure (Conventions)
+- `routes/`: Fastify route plugins (request/response handling).
+- `services/`: business logic and orchestration.
+- `repositories/`: SQL queries and data access.
+- `db/`: database connection and schema setup.
+- `lib/`: shared utilities (paths, time, errors).
 
 ### Storage
 - `backend/data/socratium.db`: SQLite database (rewrite schema).

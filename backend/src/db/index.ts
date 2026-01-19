@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import path from "path";
-import { getDataDir } from "./paths";
+import { getDataDir } from "../lib/paths";
 
 const SCHEMA_VERSION = 1;
 const dbPath = path.join(getDataDir(), "socratium.db");
