@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Socratium MVP</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">S</div>
+          <div>
+            <div class="brand-title">Socratium</div>
+            <div class="brand-subtitle">Reading companion MVP</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button class="ghost" id="providerBtn">Provider</button>
+          <button class="ghost" id="uploadBtn">Upload PDF</button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="reader">
+          <div class="reader-toolbar">
+            <div class="toolbar-left">
+              <span class="label">Current page</span>
+              <input type="number" min="1" id="pageInput" />
+              <button class="solid" id="setPageBtn">Go</button>
+            </div>
+            <div class="toolbar-right" id="sectionInfo">No section loaded</div>
+          </div>
+          <iframe id="pdfFrame" title="PDF Reader"></iframe>
+        </section>
+
+        <aside class="chat">
+          <div class="chat-header">
+            <div>
+              <div class="chat-title">Guided Discussion</div>
+              <div class="chat-subtitle" id="chatSubtitle">Select a page to start.</div>
+            </div>
+            <div class="chat-actions">
+              <button class="ghost" id="introBtn">Intro Prompt</button>
+              <button class="ghost" id="practiceBtn">Practice</button>
+            </div>
+          </div>
+
+          <div class="chat-log" id="chatLog"></div>
+
+          <form class="chat-input" id="chatForm">
+            <textarea id="chatText" rows="3" placeholder="Ask a question or answer the prompt..."></textarea>
+            <div class="chat-input-actions">
+              <div class="mode-pill" id="modePill">Mode: Auto</div>
+              <div class="input-buttons">
+                <button type="button" class="ghost" id="toggleModeBtn">Toggle Mode</button>
+                <button type="submit" class="solid">Send</button>
+                <button type="button" class="ghost" id="doneBtn">Done</button>
+              </div>
+            </div>
+          </form>
+        </aside>
+      </main>
+    </div>
+
+    <dialog id="providerDialog" class="modal">
+      <form method="dialog" id="providerForm" class="modal-content">
+        <h2>AI Provider</h2>
+        <label>
+          Name
+          <input type="text" id="providerName" placeholder="OpenAI / Local" />
+        </label>
+        <label>
+          Provider Type
+          <select id="providerType">
+            <option value="openai">OpenAI-compatible</option>
+            <option value="gemini">Gemini</option>
+          </select>
+        </label>
+        <label>
+          Base URL
+          <input type="text" id="providerBaseUrl" placeholder="https://api.openai.com" />
+        </label>
+        <label>
+          API Key
+          <input type="password" id="providerApiKey" placeholder="optional for local" />
+        </label>
+        <label>
+          Model
+          <input type="text" id="providerModel" placeholder="gpt-4o-mini" />
+        </label>
+        <div class="modal-note">Leave Base URL and Model empty to use provider defaults.</div>
+        <div class="modal-actions">
+          <button type="button" class="ghost" id="providerTestBtn">Test</button>
+          <button type="submit" class="solid">Save</button>
+        </div>
+        <div class="modal-note" id="providerStatus"></div>
+      </form>
+    </dialog>
+
+    <dialog id="uploadDialog" class="modal">
+      <form method="dialog" id="uploadForm" class="modal-content">
+        <h2>Upload PDF</h2>
+        <label class="upload-label">
+          <input type="file" id="uploadFile" accept="application/pdf" />
+        </label>
+        <div class="modal-actions">
+          <button type="submit" class="solid">Upload</button>
+        </div>
+        <div class="modal-note" id="uploadStatus"></div>
+      </form>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>

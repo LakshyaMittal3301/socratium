@@ -1,0 +1,26 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build output
+dist/
+backend/dist/
+
+# Local data and secrets
+backend/data/
+.env
+.env.*
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
+
+# OS/editor
+.DS_Store
+
+# Local-only assets
+Kleppmann, Martin - Designing data-intensive applications_ the big ideas behind reliable, scalable, and maintainable systems (2018, O'Reilly Media) - libgen.li_unlocked.pdf
