@@ -12,7 +12,7 @@ type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
-  pageText?: string;
+  contextText?: string;
 };
 
 function ChatPanel({ bookId, currentPage, sectionTitle }: ChatPanelProps) {
@@ -58,7 +58,7 @@ function ChatPanel({ bookId, currentPage, sectionTitle }: ChatPanelProps) {
         id: crypto.randomUUID(),
         role: "assistant",
         content: data.reply,
-        pageText: data.pageText
+        contextText: data.contextText
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err: unknown) {
@@ -84,10 +84,10 @@ function ChatPanel({ bookId, currentPage, sectionTitle }: ChatPanelProps) {
               {message.role === "user" ? "You" : "Socratium"}
             </p>
             <p className="chat-message__content">{message.content}</p>
-            {message.pageText && (
+            {message.contextText && (
               <details className="chat-message__context">
                 <summary>Page context</summary>
-                <pre>{message.pageText}</pre>
+                <pre>{message.contextText}</pre>
               </details>
             )}
           </div>

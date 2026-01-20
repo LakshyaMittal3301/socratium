@@ -36,3 +36,4 @@
 - Refactored extraction flow into a dedicated service with repo helpers.
 - Added debug endpoint and UI for page map and per-page text sampling.
 - Added chat stub API and UI with page context excerpt.
+- Added AI provider configuration (Gemini) and chat integration with page context.

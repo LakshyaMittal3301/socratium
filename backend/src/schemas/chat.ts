@@ -15,7 +15,7 @@ export const chatResponseSchema = {
     reply: { type: "string" },
     pageNumber: { type: "number" },
     sectionTitle: { anyOf: [{ type: "string" }, { type: "null" }] },
-    pageText: { type: "string" }
+    contextText: { type: "string" }
   },
-  required: ["reply", "pageNumber", "sectionTitle", "pageText"]
+  required: ["reply", "pageNumber", "sectionTitle", "contextText"]
 };

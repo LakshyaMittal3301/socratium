@@ -24,7 +24,7 @@ export function registerChatRoutes(app: FastifyInstance): void {
       if (!Number.isInteger(pageNumber) || pageNumber <= 0) {
         throw badRequest("Invalid page number");
       }
-      return app.services.chat.reply({
+      return await app.services.chat.reply({
         bookId: body.bookId,
         pageNumber,
         sectionTitle: body.sectionTitle ?? null,

@@ -52,8 +52,10 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 ### Storage
 - `backend/data/socratium.db`: SQLite database (rewrite schema).
 - `backend/data/books/`: uploaded PDFs (ingest phase).
+- `backend/data/ai_key`: local encryption key for stored API keys.
 - `book.text_path` and `book.outline_json` reserved for extraction output.
 - `page_map` table reserved for per-page text offsets.
+- `ai_provider` table stores provider configs with encrypted API keys.
 
 ## Data Flow (Today)
 1. Server start: `initDb()` creates tables for the rewrite schema.
@@ -71,6 +73,11 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `GET /api/books/:bookId/file`: stream the original PDF for the reader.
 - `GET /api/books/:bookId/outline`: return outline JSON for section context.
 - `POST /api/chat`: return a stub chat reply with page context (MVP).
+- `GET /api/providers`: list AI providers (Gemini for now).
+- `POST /api/providers`: create a provider.
+- `POST /api/providers/test`: test a Gemini API key + model.
+- `PATCH /api/providers/:providerId/activate`: set active provider.
+- `DELETE /api/providers/:providerId`: remove a provider.
 - `GET /api/debug/books/:bookId/text`: return a text sample (debug).
 - `GET /api/debug/books/:bookId/page-map`: return page-map offsets (debug).
 - `GET /api/debug/books/:bookId/pages/:pageNumber/text`: return text for a page (debug).
@@ -78,9 +85,9 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - The `/api/debug/*` routes exist for local development and will not ship in production UI.
 
 ## AI Provider Handling (Planned)
-- Provider config stored locally; API keys encrypted at rest.
-- `provider_type = openai`: POST to `.../v1/chat/completions` (OpenAI-compatible).
-- `provider_type = gemini`: POST to `.../models/{model}:generateContent`.
+## AI Provider Handling (Current)
+- Provider config stored locally in SQLite; API keys encrypted at rest.
+- Gemini is supported via the `@google/genai` SDK.
 
 ## Working Agreements for AI Agents
 - Make one focused change at a time; confirm before big refactors.

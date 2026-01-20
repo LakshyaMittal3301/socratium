@@ -57,6 +57,38 @@ export type PageTextResponse = {
   text: string;
 };
 
+export type ProviderType = "gemini";
+
+export type ProviderDto = {
+  id: string;
+  name: string;
+  provider_type: ProviderType;
+  base_url: string | null;
+  model: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProviderListResponse = ProviderDto[];
+
+export type CreateProviderRequest = {
+  name: string;
+  model: string;
+  apiKey: string;
+  baseUrl?: string | null;
+};
+
+export type ProviderTestRequest = {
+  model: string;
+  apiKey: string;
+};
+
+export type ProviderTestResponse = {
+  ok: boolean;
+  message: string;
+};
+
 export type ChatRequest = {
   bookId: string;
   pageNumber: number;
@@ -68,5 +100,5 @@ export type ChatResponse = {
   reply: string;
   pageNumber: number;
   sectionTitle: string | null;
-  pageText: string;
+  contextText: string;
 };

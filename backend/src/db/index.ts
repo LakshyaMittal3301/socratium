@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import path from "path";
 import { getDataDir } from "../lib/paths";
 
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 const dbPath = path.join(getDataDir(), "socratium.db");
 export const db = new Database(dbPath);
 
@@ -14,6 +14,7 @@ export function initDb(): void {
   if (currentVersion !== SCHEMA_VERSION) {
     db.exec(`
       DROP TABLE IF EXISTS page_map;
+      DROP TABLE IF EXISTS ai_provider;
       DROP TABLE IF EXISTS app_meta;
       DROP TABLE IF EXISTS book;
     `);
@@ -42,6 +43,18 @@ export function initDb(): void {
       start_offset INTEGER NOT NULL,
       end_offset INTEGER NOT NULL,
       FOREIGN KEY(book_id) REFERENCES book(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS ai_provider (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      provider_type TEXT NOT NULL,
+      base_url TEXT,
+      model TEXT NOT NULL,
+      api_key_encrypted TEXT NOT NULL,
+      is_active INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
     );
   `);
 

@@ -1,0 +1,57 @@
+export const providerSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string" },
+    name: { type: "string" },
+    provider_type: { type: "string" },
+    base_url: { anyOf: [{ type: "string" }, { type: "null" }] },
+    model: { type: "string" },
+    is_active: { type: "boolean" },
+    created_at: { type: "string" },
+    updated_at: { type: "string" }
+  },
+  required: [
+    "id",
+    "name",
+    "provider_type",
+    "base_url",
+    "model",
+    "is_active",
+    "created_at",
+    "updated_at"
+  ]
+};
+
+export const providerListSchema = {
+  type: "array",
+  items: providerSchema
+};
+
+export const createProviderSchema = {
+  type: "object",
+  properties: {
+    name: { type: "string" },
+    model: { type: "string" },
+    apiKey: { type: "string" },
+    baseUrl: { anyOf: [{ type: "string" }, { type: "null" }] }
+  },
+  required: ["name", "model", "apiKey"]
+};
+
+export const providerTestRequestSchema = {
+  type: "object",
+  properties: {
+    model: { type: "string" },
+    apiKey: { type: "string" }
+  },
+  required: ["model", "apiKey"]
+};
+
+export const providerTestResponseSchema = {
+  type: "object",
+  properties: {
+    ok: { type: "boolean" },
+    message: { type: "string" }
+  },
+  required: ["ok", "message"]
+};
