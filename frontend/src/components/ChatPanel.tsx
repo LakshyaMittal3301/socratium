@@ -80,6 +80,9 @@ function ChatPanel({ bookId, currentPage, sectionTitle }: ChatPanelProps) {
         {messages.length === 0 && <p className="muted">Ask a question to start.</p>}
         {messages.map((message) => (
           <div key={message.id} className={`chat-message chat-message--${message.role}`}>
+            <p className="chat-message__role">
+              {message.role === "user" ? "You" : "Socratium"}
+            </p>
             <p className="chat-message__content">{message.content}</p>
             {message.pageText && (
               <details className="chat-message__context">

@@ -2,6 +2,8 @@ import type { BookDto, BookOutlineResponse, OutlineNode } from "@shared/types/ap
 import { useEffect, useMemo, useState } from "react";
 import PdfViewer from "../components/PdfViewer";
 import ChatPanel from "../components/ChatPanel";
+import OutlinePanel from "../components/OutlinePanel";
+import type { OutlineEntry } from "../components/OutlinePanel";
 
 type ReaderPageProps = {
   book: BookDto;
@@ -67,8 +69,11 @@ function ReaderPage({ book, onBack }: ReaderPageProps) {
 
       <div className="reader__layout">
         <aside className="panel reader__panel">
-          <h2>Outline</h2>
-          <p className="muted">Outline will appear here.</p>
+          <OutlinePanel
+            entries={flatOutline}
+            currentEntry={currentEntry}
+            error={outlineError}
+          />
         </aside>
         <main className="panel reader__panel reader__panel--center">
           <PdfViewer
@@ -81,13 +86,12 @@ function ReaderPage({ book, onBack }: ReaderPageProps) {
           <ChatPanel bookId={book.id} currentPage={currentPage} sectionTitle={sectionTitle} />
         </aside>
       </div>
-      {outlineError && <p className="error">{outlineError}</p>}
     </div>
   );
 }
 
 function flattenOutline(nodes: OutlineNode[], depth = 1) {
-  const entries: { title: string; pageNumber: number | null; depth: number }[] = [];
+  const entries: OutlineEntry[] = [];
   for (const node of nodes) {
     entries.push({ title: node.title, pageNumber: node.pageNumber, depth });
     if (node.children.length) {
@@ -98,7 +102,7 @@ function flattenOutline(nodes: OutlineNode[], depth = 1) {
 }
 
 function pickNearestOutline(
-  entries: { title: string; pageNumber: number | null; depth: number }[],
+  entries: OutlineEntry[],
   pageNumber: number
 ) {
   const candidates = entries.filter(
