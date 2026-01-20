@@ -1,25 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { badRequest } from "../lib/errors";
-
-const bookSchema = {
-  type: "object",
-  properties: {
-    id: { type: "string" },
-    title: { type: "string" },
-    source_filename: { type: "string" },
-    pdf_path: { type: "string" },
-    created_at: { type: "string" }
-  },
-  required: ["id", "title", "source_filename", "pdf_path", "created_at"]
-};
-
-const uploadResponseSchema = {
-  type: "object",
-  properties: {
-    id: { type: "string" }
-  },
-  required: ["id"]
-};
+import { bookSchema, uploadResponseSchema } from "../schemas/books";
 
 export function registerBookRoutes(app: FastifyInstance): void {
   app.get(

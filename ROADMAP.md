@@ -35,3 +35,4 @@
 - Added `@shared/*` TypeScript alias and a sample shared type.
 - Rebuilt backend skeleton with a fresh schema and health route.
 - Added basic book storage and PDF upload/list endpoints.
+- Refactored routes to use Fastify decorate services and shared API DTOs.

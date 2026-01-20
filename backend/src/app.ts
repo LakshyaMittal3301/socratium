@@ -3,8 +3,7 @@ import multipart from "@fastify/multipart";
 import { initDb } from "./db";
 import { createBooksService } from "./services/books";
 import { AppError } from "./lib/errors";
-import { registerHealthRoutes } from "./routes/health";
-import { registerBookRoutes } from "./routes/books";
+import { registerRoutes } from "./routes";
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({ logger: true });
@@ -57,9 +56,4 @@ function normalizeError(
         : "INTERNAL_SERVER_ERROR";
   const message = statusCode === 500 ? "Internal server error" : error.message || "Request failed";
   return { statusCode, code, message };
-}
-
-function registerRoutes(app: FastifyInstance): void {
-  registerHealthRoutes(app);
-  registerBookRoutes(app);
 }

@@ -4,15 +4,14 @@ import crypto from "crypto";
 import { pipeline } from "stream/promises";
 import { getBooksDir } from "../lib/paths";
 import { insertBook, listBooks, BookRecord } from "../repositories/books";
+import type { UploadBookResponse } from "@shared/types/api";
 
 export type UploadInput = {
   filename: string;
   stream: NodeJS.ReadableStream;
 };
 
-export type UploadResult = {
-  id: string;
-};
+export type UploadResult = UploadBookResponse;
 
 export type BooksService = {
   createFromUpload: (input: UploadInput) => Promise<UploadResult>;

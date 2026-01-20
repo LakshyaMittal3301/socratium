@@ -1,12 +1,8 @@
 import { db } from "../db";
 
-export type BookRecord = {
-  id: string;
-  title: string;
-  source_filename: string;
-  pdf_path: string;
-  created_at: string;
-};
+import type { BookDto } from "@shared/types/api";
+
+export type BookRecord = BookDto;
 
 export function insertBook(record: BookRecord): void {
   db.prepare(

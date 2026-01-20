@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import type { BookDto } from "@shared/types/api";
 import "./App.css";
 
 function App() {
-  const [books, setBooks] = useState<BookRecord[]>([]);
+  const [books, setBooks] = useState<BookDto[]>([]);
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +19,7 @@ function App() {
       if (!res.ok) {
         throw new Error(`Failed to load books (${res.status})`);
       }
-      const data = (await res.json()) as BookRecord[];
+      const data = (await res.json()) as BookDto[];
       setBooks(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load books");
@@ -100,14 +101,6 @@ function App() {
     </div>
   );
 }
-
-type BookRecord = {
-  id: string;
-  title: string;
-  source_filename: string;
-  pdf_path: string;
-  created_at: string;
-};
 
 function formatDate(value: string): string {
   const date = new Date(value);

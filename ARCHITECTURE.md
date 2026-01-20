@@ -37,11 +37,16 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 
 ### Backend Structure (Conventions)
 - `routes/`: Fastify route plugins (request/response handling).
+- `schemas/`: JSON schemas for request/response validation.
 - `services/`: business logic and orchestration.
 - `repositories/`: SQL queries and data access.
 - `db/`: database connection and schema setup.
 - `lib/`: shared utilities (paths, time, errors).
 - `app.ts` decorates `app.services` and registers routes for consistent injection.
+
+### Shared Types
+- API request/response DTOs live in `shared/types/api.ts` and are imported with `import type`.
+- Backend `tsconfig.json` sets `rootDir` to the repo root so shared types are included; build output goes to `dist/` at the repo root and backend start path is `dist/backend/src/server.js`.
 
 ### Storage
 - `backend/data/socratium.db`: SQLite database (rewrite schema).

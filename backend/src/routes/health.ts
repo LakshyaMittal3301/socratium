@@ -1,4 +1,5 @@
 import { FastifyInstance } from "fastify";
+import type { HealthResponse } from "@shared/types/api";
 
 export function registerHealthRoutes(app: FastifyInstance): void {
   app.get(
@@ -14,6 +15,6 @@ export function registerHealthRoutes(app: FastifyInstance): void {
         }
       }
     },
-    async () => ({ status: "ok" })
+    async (): Promise<HealthResponse> => ({ status: "ok" })
   );
 }
