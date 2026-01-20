@@ -10,20 +10,10 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - Keep docs and the roadmap up to date with actual behavior.
 - Full rewrite planned; no data migration required.
 
-## Target UX (Planned)
-- Collapsible table-of-contents tree on the left.
-- Clean PDF reader centered.
-- Chat panel on the right with two modes: intro and discuss.
-- Selecting a section shows a short, problem-framing intro question.
-- User can skip or chat briefly, then mark the intro done.
-- After reading, user clicks discuss and answers 3 retrieval questions.
-- Completed sections stay accessible with no gating.
-
-## Target Sectioning (Planned)
-- Use PDF outline/TOC for primary section boundaries.
-- If a section spans too long, split by sub-headings; titles reflect logical headings.
-- Target 4-6 pages per section while respecting author structure.
-- Keep the sectioning pipeline extensible for future algorithms and user-defined sections.
+## MVP UX (Planned)
+- Library: upload PDF and open a book.
+- Reader: PDF in the center, chat panel on the right, current section title at the top.
+- Chat uses current page + outline context; AI integration comes after stub chat.
 
 ## Current System
 ### Frontend
@@ -71,7 +61,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 3. `/api/books` returns a list of uploaded books.
 
 ## Sectioning Strategy (Current)
-- Not implemented in the rewrite yet; TOC-based sectioning is planned.
+- Deferred; using outline + current page for context instead of precomputed sections.
 
 ## API Surface (Current)
 - `GET /api/health`: server health check.
@@ -82,6 +72,8 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `GET /api/debug/books/:bookId/outline`: return outline JSON (debug).
 - `GET /api/debug/books/:bookId/page-map`: return page-map offsets (debug).
 - `GET /api/debug/books/:bookId/pages/:pageNumber/text`: return text for a page (debug).
+## Debug Endpoints (Dev-Only)
+- The `/api/debug/*` routes exist for local development and will not ship in production UI.
 
 ## AI Provider Handling (Planned)
 - Provider config stored locally; API keys encrypted at rest.
