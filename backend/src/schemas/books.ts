@@ -44,10 +44,21 @@ export const outlineResponseSchema = {
   type: "object",
   properties: {
     outline: {
-      anyOf: [{ type: "array", items: { type: "object" } }, { type: "null" }]
+      anyOf: [{ type: "array", items: { $ref: "outlineNode#" } }, { type: "null" }]
     }
   },
   required: ["outline"]
+};
+
+export const outlineNodeSchema = {
+  $id: "outlineNode",
+  type: "object",
+  properties: {
+    title: { type: "string" },
+    pageNumber: { anyOf: [{ type: "number" }, { type: "null" }] },
+    children: { type: "array", items: { $ref: "outlineNode#" } }
+  },
+  required: ["title", "pageNumber", "children"]
 };
 
 export const pageMapEntrySchema = {

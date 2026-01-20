@@ -95,3 +95,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - Keep provider handling generic and backend-only for secrets.
 - Update `ARCHITECTURE.md` when behavior or flows change.
 - Update `ROADMAP.md` when a task is completed or scope changes.
+
+## Testing Habit (Process)
+- After each completed task, include a short “How to test” checklist in the response.
+- Prefer manual checks that map to the change (curl, UI action, or SQL query).

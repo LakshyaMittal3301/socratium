@@ -4,17 +4,23 @@ import { initDb, db } from "./db";
 import { createServices } from "./services";
 import { createRepositories } from "./repositories";
 import { AppError } from "./lib/errors";
+import { outlineNodeSchema } from "./schemas/books";
 import { registerRoutes } from "./routes";
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({ logger: true });
   initDb();
   app.decorate("db", db);
+  registerSchemas(app);
   registerServices(app);
   registerPlugins(app);
   registerErrorHandlers(app);
   registerRoutes(app);
   return app;
+}
+
+function registerSchemas(app: FastifyInstance): void {
+  app.addSchema(outlineNodeSchema);
 }
 
 function registerServices(app: FastifyInstance): void {
