@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { badRequest } from "../lib/errors";
 import { bookSchema, uploadResponseSchema } from "../schemas/books";
+import type { UploadInput } from "../types/books";
 
 export function registerBookRoutes(app: FastifyInstance): void {
   app.get(
@@ -36,10 +37,12 @@ export function registerBookRoutes(app: FastifyInstance): void {
         throw badRequest("Only PDF files are supported");
       }
 
-      const result = await app.services.books.createFromUpload({
+      const input: UploadInput = {
         filename,
         stream: file.file
-      });
+      };
+
+      const result = await app.services.books.createFromUpload(input);
 
       return result;
     }
