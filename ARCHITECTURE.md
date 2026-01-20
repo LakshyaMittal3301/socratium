@@ -49,6 +49,14 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - API request/response DTOs live in `shared/types/api.ts` and are imported with `import type`.
 - Backend `tsconfig.json` sets `rootDir` to the repo root so shared types are included; build output goes to `dist/` at the repo root and backend start path is `dist/backend/src/server.js`.
 
+### Backend Flow Summary (for new contributors)
+- `server.ts` calls `buildApp()` and starts the Fastify server.
+- `app.ts` initializes the DB, decorates `app.db`, `app.repos`, and `app.services`, registers plugins, error handlers, and routes.
+- `routes/*` handle request/response, use `schemas/*` for validation, and call `app.services`.
+- `services/*` contain business logic and call `app.repos`.
+- `repositories/*` run SQL queries and return plain records.
+- Shared API DTOs are imported from `shared/types/api.ts` using `import type`.
+
 ### Storage
 - `backend/data/socratium.db`: SQLite database (rewrite schema).
 - `backend/data/books/`: uploaded PDFs (ingest phase).
