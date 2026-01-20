@@ -1,5 +1,5 @@
 #root {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2.5rem 1.5rem 4rem;
 }
@@ -64,6 +64,10 @@
 }
 
 .book {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   border: 1px solid #efeae1;
   border-radius: 12px;
   padding: 0.85rem 1rem;
@@ -78,6 +82,10 @@
   color: #6b655c;
   font-size: 0.9rem;
   margin-top: 0.15rem;
+}
+
+.book__actions {
+  flex-shrink: 0;
 }
 
 .debug-controls {
@@ -114,4 +122,55 @@
   white-space: pre-wrap;
   font-family: "SF Mono", "Roboto Mono", monospace;
   font-size: 0.85rem;
+}
+
+.reader {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.reader__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.reader__eyebrow {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b655c;
+  margin: 0 0 0.35rem;
+}
+
+.reader__layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 320px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.reader__panel {
+  min-height: 280px;
+}
+
+.reader__panel--center {
+  min-height: 480px;
+}
+
+.reader__placeholder {
+  margin-top: 1rem;
+  color: #6b655c;
+}
+
+@media (max-width: 1024px) {
+  #root {
+    max-width: 980px;
+  }
+
+  .reader__layout {
+    grid-template-columns: 1fr;
+  }
 }
