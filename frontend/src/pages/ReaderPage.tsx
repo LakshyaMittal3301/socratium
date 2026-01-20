@@ -1,4 +1,6 @@
 import type { BookDto } from "@shared/types/api";
+import { useState } from "react";
+import PdfViewer from "../components/PdfViewer";
 
 type ReaderPageProps = {
   book: BookDto;
@@ -6,13 +8,20 @@ type ReaderPageProps = {
 };
 
 function ReaderPage({ book, onBack }: ReaderPageProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState<number | null>(null);
+  const fileUrl = `/api/books/${book.id}/file`;
+
   return (
     <div className="reader">
       <header className="reader__header panel">
         <div>
           <p className="reader__eyebrow">Reading</p>
           <h2>{book.title}</h2>
-          <p className="muted">Section: — · Page: —</p>
+          <p className="muted">
+            Section: — · Page: {currentPage}
+            {totalPages ? ` / ${totalPages}` : ""}
+          </p>
         </div>
         <button type="button" onClick={onBack}>
           Back to library
@@ -25,10 +34,11 @@ function ReaderPage({ book, onBack }: ReaderPageProps) {
           <p className="muted">Outline will appear here.</p>
         </aside>
         <main className="panel reader__panel reader__panel--center">
-          <h2>PDF Viewer</h2>
-          <p className="reader__placeholder">
-            PDF pages will render here in the next step.
-          </p>
+          <PdfViewer
+            fileUrl={fileUrl}
+            onPageChange={setCurrentPage}
+            onDocumentLoad={setTotalPages}
+          />
         </main>
         <aside className="panel reader__panel reader__panel--right">
           <h2>Chat</h2>

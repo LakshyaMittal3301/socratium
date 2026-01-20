@@ -1,3 +1,4 @@
+import fs from "fs";
 import { FastifyInstance } from "fastify";
 import { badRequest } from "../lib/errors";
 import { normalizeLimit } from "../lib/limits";
@@ -49,6 +50,23 @@ export function registerBookRoutes(app: FastifyInstance): void {
     async (request): Promise<BookMetaResponse> => {
       const { bookId } = request.params as { bookId: string };
       return app.services.books.getMeta(bookId);
+    }
+  );
+
+  app.get(
+    "/api/books/:bookId/file",
+    {
+      schema: {
+        response: {
+          404: errorResponseSchema,
+          500: errorResponseSchema
+        }
+      }
+    },
+    async (request, reply) => {
+      const { bookId } = request.params as { bookId: string };
+      const pdfPath = app.services.books.getPdfPath(bookId);
+      return reply.type("application/pdf").send(fs.createReadStream(pdfPath));
     }
   );
 

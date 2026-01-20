@@ -158,11 +158,31 @@
 
 .reader__panel--center {
   min-height: 480px;
+  padding: 0;
+  overflow: hidden;
 }
 
 .reader__placeholder {
   margin-top: 1rem;
   color: #6b655c;
+}
+
+.pdf-viewer {
+  height: 100%;
+  max-height: 70vh;
+  overflow: auto;
+  padding: 1.5rem;
+}
+
+.pdf-page {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.pdf-page canvas {
+  max-width: 100%;
+  height: auto !important;
 }
 
 @media (max-width: 1024px) {

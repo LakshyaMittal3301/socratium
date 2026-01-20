@@ -68,6 +68,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `GET /api/books`: list uploaded books.
 - `POST /api/books/upload`: upload a PDF and create a book record.
 - `GET /api/books/:bookId`: metadata with `has_text`/`has_outline`.
+- `GET /api/books/:bookId/file`: stream the original PDF for the reader.
 - `GET /api/debug/books/:bookId/text`: return a text sample (debug).
 - `GET /api/debug/books/:bookId/outline`: return outline JSON (debug).
 - `GET /api/debug/books/:bookId/page-map`: return page-map offsets (debug).

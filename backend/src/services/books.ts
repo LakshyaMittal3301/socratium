@@ -22,6 +22,7 @@ export type BooksService = {
   createFromUpload: (input: UploadInput) => Promise<UploadResult>;
   list: () => BookRecord[];
   getMeta: (bookId: string) => BookMetaResponse;
+  getPdfPath: (bookId: string) => string;
   getTextSample: (bookId: string, limit: number) => BookTextSampleResponse;
   getOutline: (bookId: string) => BookOutlineResponse;
   getPageMap: (bookId: string, limit: number) => PageMapResponse;
@@ -69,6 +70,10 @@ export function createBooksService(deps: {
         has_text: Boolean(book.text_path),
         has_outline: Boolean(book.outline_json)
       };
+    },
+    getPdfPath(bookId: string): string {
+      const book = requireBook(deps.books, bookId);
+      return book.pdf_path;
     },
     getTextSample(bookId: string, limit: number): BookTextSampleResponse {
       const book = requireBook(deps.books, bookId);
