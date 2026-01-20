@@ -70,6 +70,23 @@ export function registerBookRoutes(app: FastifyInstance): void {
     }
   );
 
+  app.get(
+    "/api/books/:bookId/outline",
+    {
+      schema: {
+        response: {
+          200: outlineResponseSchema,
+          404: errorResponseSchema,
+          500: errorResponseSchema
+        }
+      }
+    },
+    async (request): Promise<BookOutlineResponse> => {
+      const { bookId } = request.params as { bookId: string };
+      return app.services.books.getOutline(bookId);
+    }
+  );
+
   if (process.env.DEBUG_ENDPOINTS === "true") {
     app.get(
       "/api/debug/books/:bookId/text",

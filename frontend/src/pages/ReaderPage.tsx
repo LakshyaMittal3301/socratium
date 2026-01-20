@@ -1,6 +1,7 @@
 import type { BookDto, BookOutlineResponse, OutlineNode } from "@shared/types/api";
 import { useEffect, useMemo, useState } from "react";
 import PdfViewer from "../components/PdfViewer";
+import ChatPanel from "../components/ChatPanel";
 
 type ReaderPageProps = {
   book: BookDto;
@@ -20,10 +21,7 @@ function ReaderPage({ book, onBack }: ReaderPageProps) {
       setOutlineError(null);
       setOutline(null);
       try {
-        if (import.meta.env.VITE_DEBUG !== "true") {
-          return;
-        }
-        const res = await fetch(`/api/debug/books/${book.id}/outline`);
+        const res = await fetch(`/api/books/${book.id}/outline`);
         if (!res.ok) {
           throw new Error(`Failed to load outline (${res.status})`);
         }
@@ -49,6 +47,7 @@ function ReaderPage({ book, onBack }: ReaderPageProps) {
     () => pickNearestOutline(flatOutline, currentPage),
     [flatOutline, currentPage]
   );
+  const sectionTitle = currentEntry?.title ?? null;
 
   return (
     <div className="reader">
@@ -79,8 +78,7 @@ function ReaderPage({ book, onBack }: ReaderPageProps) {
           />
         </main>
         <aside className="panel reader__panel reader__panel--right">
-          <h2>Chat</h2>
-          <p className="muted">Chat panel will appear here.</p>
+          <ChatPanel bookId={book.id} currentPage={currentPage} sectionTitle={sectionTitle} />
         </aside>
       </div>
       {outlineError && <p className="error">{outlineError}</p>}
