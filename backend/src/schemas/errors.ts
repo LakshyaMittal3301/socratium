@@ -1,0 +1,14 @@
+export const errorResponseSchema = {
+  type: "object",
+  properties: {
+    error: {
+      type: "object",
+      properties: {
+        code: { type: "string" },
+        message: { type: "string" }
+      },
+      required: ["code", "message"]
+    }
+  },
+  required: ["error"]
+};

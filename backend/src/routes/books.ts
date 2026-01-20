@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { badRequest } from "../lib/errors";
 import { bookSchema, uploadResponseSchema } from "../schemas/books";
+import { errorResponseSchema } from "../schemas/errors";
 import type { UploadInput } from "../types/books";
 
 export function registerBookRoutes(app: FastifyInstance): void {
@@ -9,7 +10,9 @@ export function registerBookRoutes(app: FastifyInstance): void {
     {
       schema: {
         response: {
-          200: { type: "array", items: bookSchema }
+          200: { type: "array", items: bookSchema },
+          400: errorResponseSchema,
+          500: errorResponseSchema
         }
       }
     },
@@ -22,7 +25,9 @@ export function registerBookRoutes(app: FastifyInstance): void {
       schema: {
         consumes: ["multipart/form-data"],
         response: {
-          200: uploadResponseSchema
+          200: uploadResponseSchema,
+          400: errorResponseSchema,
+          500: errorResponseSchema
         }
       }
     },

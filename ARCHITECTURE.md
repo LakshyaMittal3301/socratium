@@ -43,6 +43,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `db/`: database connection and schema setup.
 - `lib/`: shared utilities (paths, time, errors).
 - `app.ts` decorates `app.db`, `app.repos`, and `app.services` for consistent injection.
+- `repositories/index.ts` and `services/index.ts` centralize dependency creation.
 
 ### Shared Types
 - API request/response DTOs live in `shared/types/api.ts` and are imported with `import type`.

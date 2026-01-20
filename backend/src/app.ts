@@ -1,8 +1,8 @@
 import Fastify, { FastifyInstance } from "fastify";
 import multipart from "@fastify/multipart";
 import { initDb, db } from "./db";
-import { createBooksService } from "./services/books";
-import { createBooksRepository } from "./repositories/books";
+import { createServices } from "./services";
+import { createRepositories } from "./repositories";
 import { AppError } from "./lib/errors";
 import { registerRoutes } from "./routes";
 
@@ -18,12 +18,10 @@ export function buildApp(): FastifyInstance {
 }
 
 function registerServices(app: FastifyInstance): void {
-  app.decorate("repos", {
-    books: createBooksRepository(app.db)
-  });
-  app.decorate("services", {
-    books: createBooksService({ books: app.repos.books })
-  });
+  const repos = createRepositories(app.db);
+  const services = createServices(repos);
+  app.decorate("repos", repos);
+  app.decorate("services", services);
 }
 
 function registerPlugins(app: FastifyInstance): void {
