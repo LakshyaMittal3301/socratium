@@ -1,13 +1,15 @@
 import Fastify, { FastifyInstance } from "fastify";
 import multipart from "@fastify/multipart";
-import { initDb } from "./db";
+import { initDb, db } from "./db";
 import { createBooksService } from "./services/books";
+import { createBooksRepository } from "./repositories/books";
 import { AppError } from "./lib/errors";
 import { registerRoutes } from "./routes";
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({ logger: true });
   initDb();
+  app.decorate("db", db);
   registerServices(app);
   registerPlugins(app);
   registerErrorHandlers(app);
@@ -16,8 +18,11 @@ export function buildApp(): FastifyInstance {
 }
 
 function registerServices(app: FastifyInstance): void {
+  app.decorate("repos", {
+    books: createBooksRepository(app.db)
+  });
   app.decorate("services", {
-    books: createBooksService()
+    books: createBooksService({ books: app.repos.books })
   });
 }
 

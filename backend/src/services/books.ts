@@ -4,7 +4,7 @@ import crypto from "crypto";
 import { pipeline } from "stream/promises";
 import { getBooksDir } from "../lib/paths";
 import { nowIso } from "../lib/time";
-import { insertBook, listBooks, BookRecord } from "../repositories/books";
+import type { BooksRepository, BookRecord } from "../repositories/books";
 import type { UploadInput, UploadResult } from "../types/books";
 
 export type BooksService = {
@@ -22,7 +22,7 @@ function buildBookRecord(id: string, filename: string, pdfPath: string): BookRec
   };
 }
 
-export function createBooksService(): BooksService {
+export function createBooksService(repos: { books: BooksRepository }): BooksService {
   return {
     async createFromUpload(input: UploadInput): Promise<UploadResult> {
       const bookId = crypto.randomUUID();
@@ -30,12 +30,12 @@ export function createBooksService(): BooksService {
 
       await pipeline(input.stream, fs.createWriteStream(pdfPath));
 
-      insertBook(buildBookRecord(bookId, input.filename, pdfPath));
+      repos.books.insert(buildBookRecord(bookId, input.filename, pdfPath));
 
       return { id: bookId };
     },
     list(): BookRecord[] {
-      return listBooks();
+      return repos.books.list();
     }
   };
 }
