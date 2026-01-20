@@ -18,6 +18,7 @@ function PdfViewer({ fileUrl, onPageChange, onDocumentLoad }: PdfViewerProps) {
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const ratiosRef = useRef<Map<number, number>>(new Map());
   const lastPageRef = useRef<number | null>(null);
 
@@ -35,15 +36,6 @@ function PdfViewer({ fileUrl, onPageChange, onDocumentLoad }: PdfViewerProps) {
     observer.observe(container);
     return () => observer.disconnect();
   }, []);
-
-  useEffect(() => {
-    if (!numPages) return;
-    pageRefs.current = Array.from({ length: numPages }, () => null);
-    ratiosRef.current = new Map();
-    lastPageRef.current = null;
-    onDocumentLoad?.(numPages);
-    onPageChange?.(1);
-  }, [numPages, onDocumentLoad, onPageChange]);
 
   useEffect(() => {
     if (!numPages || !onPageChange) return;
@@ -78,11 +70,12 @@ function PdfViewer({ fileUrl, onPageChange, onDocumentLoad }: PdfViewerProps) {
       }
     );
 
-    pageRefs.current.forEach((pageEl) => {
-      if (pageEl) observer.observe(pageEl);
-    });
+    observerRef.current = observer;
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      observerRef.current = null;
+    };
   }, [numPages, onPageChange]);
 
   return (
@@ -92,7 +85,12 @@ function PdfViewer({ fileUrl, onPageChange, onDocumentLoad }: PdfViewerProps) {
         file={fileUrl}
         onLoadSuccess={(doc) => {
           setError(null);
+          pageRefs.current = Array.from({ length: doc.numPages }, () => null);
+          ratiosRef.current = new Map();
+          lastPageRef.current = null;
           setNumPages(doc.numPages);
+          onDocumentLoad?.(doc.numPages);
+          onPageChange?.(1);
         }}
         onLoadError={(err) => {
           setError(err instanceof Error ? err.message : "Failed to load PDF");
@@ -105,6 +103,9 @@ function PdfViewer({ fileUrl, onPageChange, onDocumentLoad }: PdfViewerProps) {
             className="pdf-page"
             ref={(el) => {
               pageRefs.current[index] = el;
+              if (el && observerRef.current) {
+                observerRef.current.observe(el);
+              }
             }}
             data-page={index + 1}
           >
