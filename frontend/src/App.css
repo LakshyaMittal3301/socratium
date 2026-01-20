@@ -1,5 +1,5 @@
 #root {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 2.5rem 1.5rem 4rem;
 }
@@ -153,19 +153,42 @@
 
 .reader__layout {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr) 320px;
+  grid-template-columns: 240px minmax(0, 1fr) 360px;
   gap: 1rem;
   align-items: start;
 }
 
 .reader__panel {
   min-height: 280px;
+  min-width: 0;
 }
 
 .reader__panel--center {
   min-height: 480px;
   padding: 0;
   overflow: hidden;
+  height: 75vh;
+}
+
+.reader__panel--right {
+  height: 75vh;
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.chat-panel__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.chat-panel__header .muted {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .reader__placeholder {
@@ -174,7 +197,7 @@
 }
 
 .pdf-viewer {
-  height: 70vh;
+  height: 100%;
   overflow: auto;
   padding: 1.5rem;
 }
@@ -243,6 +266,8 @@
   flex-direction: column;
   gap: 1rem;
   height: 100%;
+  width: 100%;
+  min-width: 0;
 }
 
 .chat-panel__header h2 {
@@ -258,6 +283,7 @@
   overflow: auto;
   display: grid;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .chat-message {
@@ -309,6 +335,12 @@
 .chat-panel__form {
   display: grid;
   gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.chat-panel__form button {
+  width: 100%;
 }
 
 .chat-panel__form textarea {
@@ -427,5 +459,14 @@
 
   .reader__layout {
     grid-template-columns: 1fr;
+  }
+
+  .reader__panel--center,
+  .reader__panel--right {
+    height: auto;
+  }
+
+  .pdf-viewer {
+    height: 70vh;
   }
 }

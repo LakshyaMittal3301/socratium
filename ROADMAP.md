@@ -10,7 +10,7 @@
 - Add minimal tests around extraction and provider configuration.
 
 ## Next
-- Build MVP reader: library -> reader -> chat with page-aware context.
+- Improve reader UX: outline jump, chat polish, and AI prompt tuning.
 
 ## Plan
 - Phase 1: Backend skeleton with clean module layout, SQLite schema reset, health route.
@@ -18,7 +18,7 @@
 - Phase 3: Reader shell (PDF center + chat panel + current section header).
 - Phase 4: React-PDF rendering + page tracking.
 - Phase 5: Outline mapping to current page.
-- Phase 6: Chat MVP stub + API.
+- Phase 6: Chat MVP + API.
 - Phase 7: AI integration + prompt refinement.
 - Phase 8: Cleanup, tests, and docs update pass.
 

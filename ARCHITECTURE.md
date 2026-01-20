@@ -11,9 +11,9 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - Full rewrite planned; no data migration required.
 
 ## MVP UX (Planned)
-- Library: upload PDF and open a book.
-- Reader: PDF in the center, chat panel on the right, current section title at the top.
-- Chat uses current page + outline context; AI integration comes after stub chat.
+- Library: upload PDF, manage AI providers, and open a book.
+- Reader: PDF in the center, outline on the left, chat panel on the right.
+- Chat uses current page + outline context with Gemini responses.
 
 ## Current System
 ### Frontend
@@ -23,7 +23,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 ### Backend
 - Fastify app built in `backend/src/app.ts`, started by `backend/src/server.ts`.
 - SQLite schema in `backend/src/db/index.ts` (reset for rewrite).
-- `/api/health` and basic book upload/list routes are wired in phase 2a.
+- Book upload, outline extraction, chat, and provider configuration are wired.
 
 ### Backend Structure (Conventions)
 - `routes/`: Fastify route plugins (request/response handling).
@@ -59,8 +59,9 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 
 ## Data Flow (Today)
 1. Server start: `initDb()` creates tables for the rewrite schema.
-2. `/api/books/upload` stores a PDF and inserts a book record.
+2. `/api/books/upload` stores a PDF, extracts text/outline, and builds page map.
 3. `/api/books` returns a list of uploaded books.
+4. `/api/providers` manages Gemini providers; `/api/chat` uses the active provider.
 
 ## Sectioning Strategy (Current)
 - Deferred; using outline + current page for context instead of precomputed sections.
@@ -72,7 +73,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `GET /api/books/:bookId`: metadata with `has_text`/`has_outline`.
 - `GET /api/books/:bookId/file`: stream the original PDF for the reader.
 - `GET /api/books/:bookId/outline`: return outline JSON for section context.
-- `POST /api/chat`: return a stub chat reply with page context (MVP).
+- `POST /api/chat`: return a Gemini chat reply with page context.
 - `GET /api/providers`: list AI providers (Gemini for now).
 - `POST /api/providers`: create a provider.
 - `POST /api/providers/test`: test a Gemini API key + model.
@@ -84,7 +85,6 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 ## Debug Endpoints (Dev-Only)
 - The `/api/debug/*` routes exist for local development and will not ship in production UI.
 
-## AI Provider Handling (Planned)
 ## AI Provider Handling (Current)
 - Provider config stored locally in SQLite; API keys encrypted at rest.
 - Gemini is supported via the `@google/genai` SDK.

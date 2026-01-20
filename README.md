@@ -1,6 +1,6 @@
 # Socratium
 
-Socratium is a local-first reading companion that uses Socratic prompts and retrieval practice to make technical reading active. It is provider-agnostic and runs entirely on your machine.
+Socratium is a local-first reading companion that uses Socratic prompts and retrieval practice to make technical reading active. It runs entirely on your machine and currently supports Gemini via the backend.
 
 ## Quickstart (Development)
 1. `cd backend`
@@ -15,7 +15,7 @@ The backend runs on `http://127.0.0.1:8787`. The React dev server runs on `http:
 - Frontend debug panel is visible only when `VITE_DEBUG=true`.
 
 ## Status
-The app is in a full rewrite. Only `/api/health` is wired on the backend; UI and feature flows are being rebuilt.
+The app is in a full rewrite. Upload → reader → chat is wired, with AI provider configuration in the library screen.
 
 ## Repo Layout
 - `backend/`: Fastify + TypeScript API server.
@@ -23,6 +23,7 @@ The app is in a full rewrite. Only `/api/health` is wired on the backend; UI and
 
 ## Local Data
 - `backend/data/socratium.db`: SQLite database.
+- `backend/data/ai_key`: local encryption key for stored API keys.
 
 To reset local state, remove `backend/data/`.
 
