@@ -41,3 +41,18 @@ export type BookMetaResponse = BookDto & {
   has_text: boolean;
   has_outline: boolean;
 };
+
+export type PageMapEntry = {
+  page_number: number;
+  start_offset: number;
+  end_offset: number;
+};
+
+export type PageMapResponse = {
+  entries: PageMapEntry[];
+};
+
+export type PageTextResponse = {
+  page_number: number;
+  text: string;
+};

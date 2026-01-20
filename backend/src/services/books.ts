@@ -6,12 +6,15 @@ import { getBooksDir } from "../lib/paths";
 import { nowIso } from "../lib/time";
 import { notFound } from "../lib/errors";
 import type { BooksRepository, BookRecord } from "../repositories/books";
+import type { PageMapRepository } from "../repositories/page-map";
 import type { UploadInput, UploadResult } from "../types/books";
 import type {
   BookMetaResponse,
   BookOutlineResponse,
   BookTextSampleResponse,
-  OutlineNode
+  OutlineNode,
+  PageMapResponse,
+  PageTextResponse
 } from "@shared/types/api";
 import type { ExtractionService } from "./extraction";
 
@@ -21,6 +24,8 @@ export type BooksService = {
   getMeta: (bookId: string) => BookMetaResponse;
   getTextSample: (bookId: string, limit: number) => BookTextSampleResponse;
   getOutline: (bookId: string) => BookOutlineResponse;
+  getPageMap: (bookId: string, limit: number) => PageMapResponse;
+  getPageText: (bookId: string, pageNumber: number) => PageTextResponse;
 };
 
 function buildBookRecord(id: string, filename: string, pdfPath: string): BookRecord {
@@ -36,6 +41,7 @@ function buildBookRecord(id: string, filename: string, pdfPath: string): BookRec
 export function createBooksService(deps: {
   books: BooksRepository;
   extraction: ExtractionService;
+  pageMap: PageMapRepository;
 }): BooksService {
   return {
     async createFromUpload(input: UploadInput): Promise<UploadResult> {
@@ -78,6 +84,26 @@ export function createBooksService(deps: {
         return { outline: null };
       }
       return { outline: JSON.parse(book.outline_json) as OutlineNode[] };
+    },
+    getPageMap(bookId: string, limit: number): PageMapResponse {
+      requireBook(deps.books, bookId);
+      const entries = deps.pageMap.listForBook(bookId).slice(0, limit);
+      return { entries };
+    },
+    getPageText(bookId: string, pageNumber: number): PageTextResponse {
+      const book = requireBook(deps.books, bookId);
+      if (!book.text_path) {
+        throw notFound("Text not available");
+      }
+      const entry = deps.pageMap.getEntry(bookId, pageNumber);
+      if (!entry) {
+        throw notFound("Page not found");
+      }
+      const text = fs.readFileSync(book.text_path, "utf8");
+      return {
+        page_number: entry.page_number,
+        text: text.slice(entry.start_offset, entry.end_offset)
+      };
     }
   };
 }

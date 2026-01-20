@@ -42,6 +42,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `repositories/`: SQL queries and data access.
 - `db/`: database connection and schema setup.
 - `lib/`: shared utilities (paths, time, errors).
+- `lib/limits.ts` holds common limit clamping helpers for debug endpoints.
 - `app.ts` decorates `app.db`, `app.repos`, and `app.services` for consistent injection.
 - `repositories/index.ts` and `services/index.ts` centralize dependency creation.
 
@@ -77,8 +78,10 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `GET /api/books`: list uploaded books.
 - `POST /api/books/upload`: upload a PDF and create a book record.
 - `GET /api/books/:bookId`: metadata with `has_text`/`has_outline`.
-- `GET /api/books/:bookId/text`: return a text sample (debug).
-- `GET /api/books/:bookId/outline`: return outline JSON (debug).
+- `GET /api/debug/books/:bookId/text`: return a text sample (debug).
+- `GET /api/debug/books/:bookId/outline`: return outline JSON (debug).
+- `GET /api/debug/books/:bookId/page-map`: return page-map offsets (debug).
+- `GET /api/debug/books/:bookId/pages/:pageNumber/text`: return text for a page (debug).
 
 ## AI Provider Handling (Planned)
 - Provider config stored locally; API keys encrypted at rest.

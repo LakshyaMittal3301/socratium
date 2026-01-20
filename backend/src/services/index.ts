@@ -13,6 +13,6 @@ export function createServices(repos: Repositories): Services {
     pageMap: repos.pageMap
   });
   return {
-    books: createBooksService({ books: repos.books, extraction })
+    books: createBooksService({ books: repos.books, extraction, pageMap: repos.pageMap })
   };
 }

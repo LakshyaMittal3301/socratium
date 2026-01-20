@@ -95,6 +95,14 @@
   min-width: 220px;
 }
 
+.debug-controls input[type="number"] {
+  border: 1px solid #d7cfbf;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  background: #fffaf4;
+  width: 140px;
+}
+
 .debug-output {
   margin-top: 1rem;
   padding: 0.75rem;

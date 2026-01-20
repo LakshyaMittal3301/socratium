@@ -1,15 +1,24 @@
 import { FastifyInstance } from "fastify";
 import { badRequest } from "../lib/errors";
+import { normalizeLimit } from "../lib/limits";
 import {
   bookMetaSchema,
   bookSchema,
   outlineResponseSchema,
+  pageMapResponseSchema,
+  pageTextResponseSchema,
   textSampleSchema,
   uploadResponseSchema
 } from "../schemas/books";
 import { errorResponseSchema } from "../schemas/errors";
 import type { UploadInput } from "../types/books";
-import type { BookMetaResponse, BookOutlineResponse, BookTextSampleResponse } from "@shared/types/api";
+import type {
+  BookMetaResponse,
+  BookOutlineResponse,
+  BookTextSampleResponse,
+  PageMapResponse,
+  PageTextResponse
+} from "@shared/types/api";
 
 export function registerBookRoutes(app: FastifyInstance): void {
   app.get(
@@ -43,49 +52,104 @@ export function registerBookRoutes(app: FastifyInstance): void {
     }
   );
 
-  // Debug endpoint for verifying extracted text output.
-  app.get(
-    "/api/books/:bookId/text",
-    {
-      schema: {
-        querystring: {
-          type: "object",
-          properties: {
-            limit: { type: "number" }
+  if (process.env.DEBUG_ENDPOINTS === "true") {
+    app.get(
+      "/api/debug/books/:bookId/text",
+      {
+        schema: {
+          querystring: {
+            type: "object",
+            properties: {
+              limit: { type: "number" }
+            }
+          },
+          response: {
+            200: textSampleSchema,
+            404: errorResponseSchema,
+            500: errorResponseSchema
           }
-        },
-        response: {
-          200: textSampleSchema,
-          404: errorResponseSchema,
-          500: errorResponseSchema
         }
+      },
+      async (request): Promise<BookTextSampleResponse> => {
+        const { bookId } = request.params as { bookId: string };
+        const limitRaw = (request.query as { limit?: number }).limit;
+        const limit = normalizeLimit(limitRaw);
+        return app.services.books.getTextSample(bookId, limit);
       }
-    },
-    async (request): Promise<BookTextSampleResponse> => {
-      const { bookId } = request.params as { bookId: string };
-      const limitRaw = (request.query as { limit?: number }).limit;
-      const limit = normalizeLimit(limitRaw);
-      return app.services.books.getTextSample(bookId, limit);
-    }
-  );
+    );
 
-  // Debug endpoint for verifying extracted outline data.
-  app.get(
-    "/api/books/:bookId/outline",
-    {
-      schema: {
-        response: {
-          200: outlineResponseSchema,
-          404: errorResponseSchema,
-          500: errorResponseSchema
+    app.get(
+      "/api/debug/books/:bookId/outline",
+      {
+        schema: {
+          response: {
+            200: outlineResponseSchema,
+            404: errorResponseSchema,
+            500: errorResponseSchema
+          }
         }
+      },
+      async (request): Promise<BookOutlineResponse> => {
+        const { bookId } = request.params as { bookId: string };
+        return app.services.books.getOutline(bookId);
       }
-    },
-    async (request): Promise<BookOutlineResponse> => {
-      const { bookId } = request.params as { bookId: string };
-      return app.services.books.getOutline(bookId);
-    }
-  );
+    );
+
+    app.get(
+      "/api/debug/books/:bookId/page-map",
+      {
+        schema: {
+          querystring: {
+            type: "object",
+            properties: {
+              limit: { type: "number" }
+            }
+          },
+          response: {
+            200: pageMapResponseSchema,
+            404: errorResponseSchema,
+            500: errorResponseSchema
+          }
+        }
+      },
+      async (request): Promise<PageMapResponse> => {
+        const { bookId } = request.params as { bookId: string };
+        const limitRaw = (request.query as { limit?: number }).limit;
+        const limit = normalizeLimit(limitRaw);
+        return app.services.books.getPageMap(bookId, limit);
+      }
+    );
+
+    app.get(
+      "/api/debug/books/:bookId/pages/:pageNumber/text",
+      {
+        schema: {
+          params: {
+            type: "object",
+            properties: {
+              bookId: { type: "string" },
+              pageNumber: { type: "string" }
+            },
+            required: ["bookId", "pageNumber"]
+          },
+          response: {
+            200: pageTextResponseSchema,
+            400: errorResponseSchema,
+            404: errorResponseSchema,
+            500: errorResponseSchema
+          }
+        }
+      },
+      async (request): Promise<PageTextResponse> => {
+        const { bookId, pageNumber } = request.params as { bookId: string; pageNumber: string };
+        const resolvedPage = Number(pageNumber);
+        if (!Number.isInteger(resolvedPage) || resolvedPage <= 0) {
+          throw badRequest("Invalid page number");
+        }
+        return app.services.books.getPageText(bookId, resolvedPage);
+      }
+    );
+  }
 
   app.post(
     "/api/books/upload",
@@ -120,10 +184,4 @@ export function registerBookRoutes(app: FastifyInstance): void {
       return result;
     }
   );
-}
-
-function normalizeLimit(value?: number): number {
-  const fallback = 2000;
-  if (typeof value !== "number" || Number.isNaN(value)) return fallback;
-  return Math.max(0, Math.min(value, 20000));
 }

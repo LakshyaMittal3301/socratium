@@ -49,3 +49,30 @@ export const outlineResponseSchema = {
   },
   required: ["outline"]
 };
+
+export const pageMapEntrySchema = {
+  type: "object",
+  properties: {
+    page_number: { type: "number" },
+    start_offset: { type: "number" },
+    end_offset: { type: "number" }
+  },
+  required: ["page_number", "start_offset", "end_offset"]
+};
+
+export const pageMapResponseSchema = {
+  type: "object",
+  properties: {
+    entries: { type: "array", items: pageMapEntrySchema }
+  },
+  required: ["entries"]
+};
+
+export const pageTextResponseSchema = {
+  type: "object",
+  properties: {
+    page_number: { type: "number" },
+    text: { type: "string" }
+  },
+  required: ["page_number", "text"]
+};

@@ -10,6 +10,10 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 
 The backend runs on `http://127.0.0.1:8787`. The React dev server runs on `http://127.0.0.1:5173`.
 
+## Debug Endpoints (Dev Only)
+- Backend debug routes are available only when `DEBUG_ENDPOINTS=true`.
+- Frontend debug panel is visible only when `VITE_DEBUG=true`.
+
 ## Status
 The app is in a full rewrite. Only `/api/health` is wired on the backend; UI and feature flows are being rebuilt.
 

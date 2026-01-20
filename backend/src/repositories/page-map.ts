@@ -4,6 +4,7 @@ import type { PageMapEntry } from "../lib/pdf";
 export type PageMapRepository = {
   replaceForBook: (bookId: string, entries: PageMapEntry[]) => void;
   listForBook: (bookId: string) => PageMapEntry[];
+  getEntry: (bookId: string, pageNumber: number) => PageMapEntry | null;
 };
 
 export function createPageMapRepository(db: import("better-sqlite3").Database): PageMapRepository {
@@ -34,6 +35,15 @@ export function createPageMapRepository(db: import("better-sqlite3").Database): 
           "SELECT page_number, start_offset, end_offset FROM page_map WHERE book_id = ? ORDER BY page_number"
         )
         .all(bookId) as PageMapEntry[];
+    },
+    getEntry(bookId: string, pageNumber: number): PageMapEntry | null {
+      return (
+        db
+          .prepare(
+            "SELECT page_number, start_offset, end_offset FROM page_map WHERE book_id = ? AND page_number = ?"
+          )
+          .get(bookId, pageNumber) as PageMapEntry | undefined
+      ) ?? null;
     }
   };
 }

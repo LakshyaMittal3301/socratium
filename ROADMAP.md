@@ -39,3 +39,4 @@
 - Swapped PDF parsing to `pdfjs-dist` and added schema fields for text/outline/page map.
 - Implemented PDF extraction, page map storage, and debug endpoints.
 - Refactored extraction flow into a dedicated service with repo helpers.
+- Added debug endpoint and UI for page map and per-page text sampling.
