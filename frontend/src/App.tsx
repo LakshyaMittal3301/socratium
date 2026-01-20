@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import type { BookDto } from "@shared/types/api";
+import type {
+  BookDto,
+  BookOutlineResponse,
+  BookTextSampleResponse,
+  OutlineNode
+} from "@shared/types/api";
 import "./App.css";
 
 function App() {
@@ -7,10 +12,19 @@ function App() {
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [outline, setOutline] = useState<OutlineNode[] | null>(null);
+  const [textSample, setTextSample] = useState<string>("");
 
   useEffect(() => {
     void loadBooks();
   }, []);
+
+  useEffect(() => {
+    if (!selectedBookId && books.length > 0) {
+      setSelectedBookId(books[0].id);
+    }
+  }, [books, selectedBookId]);
 
   async function loadBooks() {
     setError(null);
@@ -58,6 +72,42 @@ function App() {
     }
   }
 
+  async function fetchOutline() {
+    if (!selectedBookId) return;
+    setError(null);
+    try {
+      const res = await fetch(`/api/books/${selectedBookId}/outline`);
+      if (!res.ok) {
+        throw new Error(`Failed to load outline (${res.status})`);
+      }
+      const data = (await res.json()) as BookOutlineResponse;
+      setOutline(data.outline);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load outline");
+    }
+  }
+
+  async function fetchTextSample() {
+    if (!selectedBookId) return;
+    setError(null);
+    try {
+      const res = await fetch(`/api/books/${selectedBookId}/text?limit=2000`);
+      if (!res.ok) {
+        throw new Error(`Failed to load text (${res.status})`);
+      }
+      const data = (await res.json()) as BookTextSampleResponse;
+      setTextSample(data.text);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load text");
+    }
+  }
+
+  function handleSelectBook(event: React.ChangeEvent<HTMLSelectElement>) {
+    setSelectedBookId(event.target.value);
+    setOutline(null);
+    setTextSample("");
+  }
+
   return (
     <div className="app">
       <header className="app__header">
@@ -97,6 +147,40 @@ function App() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="panel">
+        <div className="panel__header">
+          <h2>Debug</h2>
+          <button type="button" onClick={() => {
+            setOutline(null);
+            setTextSample("");
+          }}>
+            Clear
+          </button>
+        </div>
+        <div className="debug-controls">
+          <select value={selectedBookId ?? ""} onChange={handleSelectBook}>
+            <option value="" disabled>
+              Select a book
+            </option>
+            {books.map((book) => (
+              <option key={book.id} value={book.id}>
+                {book.title}
+              </option>
+            ))}
+          </select>
+          <button type="button" onClick={fetchOutline} disabled={!selectedBookId}>
+            Fetch outline
+          </button>
+          <button type="button" onClick={fetchTextSample} disabled={!selectedBookId}>
+            Fetch text sample
+          </button>
+        </div>
+        {outline && (
+          <pre className="debug-output">{JSON.stringify(outline, null, 2)}</pre>
+        )}
+        {textSample && <pre className="debug-output">{textSample}</pre>}
       </section>
     </div>
   );

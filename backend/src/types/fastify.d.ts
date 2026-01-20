@@ -1,5 +1,6 @@
 import type { BooksService } from "../services/books";
 import type { BooksRepository } from "../repositories/books";
+import type { PageMapRepository } from "../repositories/page-map";
 import type { Database } from "better-sqlite3";
 
 declare module "fastify" {
@@ -7,6 +8,7 @@ declare module "fastify" {
     db: Database;
     repos: {
       books: BooksRepository;
+      pageMap: PageMapRepository;
     };
     services: {
       books: BooksService;

@@ -54,12 +54,15 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `app.ts` initializes the DB, decorates `app.db`, `app.repos`, and `app.services`, registers plugins, error handlers, and routes.
 - `routes/*` handle request/response, use `schemas/*` for validation, and call `app.services`.
 - `services/*` contain business logic and call `app.repos`.
+- `services/extraction.ts` handles PDF text extraction, outline capture, and page map persistence.
 - `repositories/*` run SQL queries and return plain records.
 - Shared API DTOs are imported from `shared/types/api.ts` using `import type`.
 
 ### Storage
 - `backend/data/socratium.db`: SQLite database (rewrite schema).
 - `backend/data/books/`: uploaded PDFs (ingest phase).
+- `book.text_path` and `book.outline_json` reserved for extraction output.
+- `page_map` table reserved for per-page text offsets.
 
 ## Data Flow (Today)
 1. Server start: `initDb()` creates tables for the rewrite schema.
@@ -73,6 +76,9 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `GET /api/health`: server health check.
 - `GET /api/books`: list uploaded books.
 - `POST /api/books/upload`: upload a PDF and create a book record.
+- `GET /api/books/:bookId`: metadata with `has_text`/`has_outline`.
+- `GET /api/books/:bookId/text`: return a text sample (debug).
+- `GET /api/books/:bookId/outline`: return outline JSON (debug).
 
 ## AI Provider Handling (Planned)
 - Provider config stored locally; API keys encrypted at rest.

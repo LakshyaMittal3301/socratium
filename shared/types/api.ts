@@ -22,3 +22,22 @@ export type BookListResponse = BookDto[];
 export type UploadBookResponse = {
   id: string;
 };
+
+export type OutlineNode = {
+  title: string;
+  pageNumber: number | null;
+  children: OutlineNode[];
+};
+
+export type BookOutlineResponse = {
+  outline: OutlineNode[] | null;
+};
+
+export type BookTextSampleResponse = {
+  text: string;
+};
+
+export type BookMetaResponse = BookDto & {
+  has_text: boolean;
+  has_outline: boolean;
+};

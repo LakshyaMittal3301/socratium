@@ -36,3 +36,6 @@
 - Rebuilt backend skeleton with a fresh schema and health route.
 - Added basic book storage and PDF upload/list endpoints.
 - Refactored routes to use Fastify decorate services and shared API DTOs.
+- Swapped PDF parsing to `pdfjs-dist` and added schema fields for text/outline/page map.
+- Implemented PDF extraction, page map storage, and debug endpoints.
+- Refactored extraction flow into a dedicated service with repo helpers.
