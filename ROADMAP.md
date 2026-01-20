@@ -10,6 +10,11 @@
 - Tighten the reading + chat UX based on actual usage.
 - Add minimal tests around sectioning and provider configuration.
 
+## Next
+- Refactor backend structure and flow before starting Phase 2b/2c.
+- Phase 2b: PDF text extraction + page map storage.
+- Phase 2c: Outline/TOC extraction stub + persist outline JSON.
+
 ## Plan
 - Phase 1: Backend skeleton with clean module layout, SQLite schema reset, health route.
 - Phase 2: PDF ingest pipeline (upload, storage, text extraction, page map).

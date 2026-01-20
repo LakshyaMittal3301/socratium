@@ -41,6 +41,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `repositories/`: SQL queries and data access.
 - `db/`: database connection and schema setup.
 - `lib/`: shared utilities (paths, time, errors).
+- `app.ts` decorates `app.services` and registers routes for consistent injection.
 
 ### Storage
 - `backend/data/socratium.db`: SQLite database (rewrite schema).
