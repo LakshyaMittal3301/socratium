@@ -56,6 +56,10 @@ export function initDb(): void {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS ai_provider_single_active
+      ON ai_provider(is_active)
+      WHERE is_active = 1;
   `);
 
   db.pragma(`user_version = ${SCHEMA_VERSION}`);

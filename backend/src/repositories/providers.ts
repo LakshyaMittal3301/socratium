@@ -27,7 +27,7 @@ export type ProvidersRepository = {
   list: () => ProviderRecord[];
   getById: (id: string) => ProviderRecord | null;
   getActive: () => ProviderRecord | null;
-  setActive: (id: string) => void;
+  setActive: (id: string, activatedAt: string) => void;
   remove: (id: string) => void;
 };
 
@@ -78,10 +78,15 @@ export function createProvidersRepository(
           | undefined
       ) ?? null;
     },
-    setActive(id: string): void {
+    setActive(id: string, activatedAt: string): void {
       const tx = db.transaction(() => {
-        db.prepare("UPDATE ai_provider SET is_active = 0").run();
-        db.prepare("UPDATE ai_provider SET is_active = 1 WHERE id = ?").run(id);
+        db.prepare("UPDATE ai_provider SET is_active = 0, updated_at = ? WHERE is_active = 1").run(
+          activatedAt
+        );
+        db.prepare("UPDATE ai_provider SET is_active = 1, updated_at = ? WHERE id = ?").run(
+          activatedAt,
+          id
+        );
       });
       tx();
     },

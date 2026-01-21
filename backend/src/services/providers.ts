@@ -72,7 +72,7 @@ export function createProvidersService(repos: {
         })
       );
       if (!repos.providers.getActive()) {
-        repos.providers.setActive(record.id);
+        repos.providers.setActive(record.id, now);
         const updated = repos.providers.getById(record.id);
         if (updated) {
           return toDto(updated);
@@ -85,7 +85,7 @@ export function createProvidersService(repos: {
       if (!existing) {
         throw notFound("Provider not found");
       }
-      repos.providers.setActive(id);
+      repos.providers.setActive(id, nowIso());
       const updated = repos.providers.getById(id);
       if (!updated) {
         throw notFound("Provider not found");
