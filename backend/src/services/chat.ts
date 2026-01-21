@@ -1,11 +1,15 @@
 import { badRequest } from "../lib/errors";
 import { decryptSecret } from "../lib/secrets";
-import { createOpenRouterClient } from "../lib/openrouter";
 import type { BooksService } from "./books";
 import type { ProvidersService } from "./providers";
 import type { ChatRequest, ChatResponse } from "@shared/types/api";
+import type { ProviderType } from "@shared/types/providers";
+import { collectPageContext } from "./chat/context";
+import { buildPrompt } from "./chat/prompt";
+import { sendGeminiChat } from "./chat/providers/gemini";
+import { sendOpenRouterChat } from "./chat/providers/openrouter";
 
-const PREVIEW_PAGES = 3;
+const DEFAULT_PREVIEW_PAGES = 3;
 
 export type ChatService = {
   reply: (input: ChatRequest) => Promise<ChatResponse>;
@@ -14,7 +18,9 @@ export type ChatService = {
 export function createChatService(deps: {
   books: BooksService;
   providers: ProvidersService;
+  previewPages?: number;
 }): ChatService {
+  const previewPages = Math.max(1, deps.previewPages ?? DEFAULT_PREVIEW_PAGES);
   return {
     async reply(input: ChatRequest): Promise<ChatResponse> {
       const provider = deps.providers.getActiveRecord();
@@ -22,8 +28,17 @@ export function createChatService(deps: {
         throw badRequest("No active AI provider configured");
       }
 
+      if (!isProviderType(provider.provider_type)) {
+        throw badRequest("Unsupported provider type");
+      }
+
       const sectionTitle = input.sectionTitle?.trim() || null;
-      const pages = collectPageContext(deps.books, input.bookId, input.pageNumber);
+      const pages = collectPageContext(
+        deps.books,
+        input.bookId,
+        input.pageNumber,
+        previewPages
+      );
       const contextText = pages.map((page) => `Page ${page.pageNumber}:\n${page.text}`).join("\n\n");
       const prompt = buildPrompt({
         sectionTitle,
@@ -31,32 +46,18 @@ export function createChatService(deps: {
         question: input.message
       });
 
+      const apiKey = decryptSecret(provider.api_key_encrypted);
+      const handler = CHAT_HANDLERS[provider.provider_type];
       let reply = "No response generated.";
-      if (provider.provider_type === "openrouter") {
-        const apiKey = decryptSecret(provider.api_key_encrypted);
-        const client = await createOpenRouterClient(apiKey);
-        const completion = await client.chat.send({
+      try {
+        reply = await handler({
+          apiKey,
           model: provider.model,
-          messages: [
-            {
-              role: "user",
-              content: prompt
-            }
-          ],
-          stream: false
+          prompt
         });
-        reply = completion.choices?.[0]?.message?.content ?? reply;
-      } else if (provider.provider_type === "gemini") {
-        const apiKey = decryptSecret(provider.api_key_encrypted);
-        const { GoogleGenAI } = await import("@google/genai");
-        const ai = new GoogleGenAI({ apiKey });
-        const response = await ai.models.generateContent({
-          model: provider.model,
-          contents: prompt
-        });
-        reply = response.text ?? reply;
-      } else {
-        throw badRequest("Unsupported provider type");
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        throw new Error(`Provider request failed (${provider.provider_type}): ${message}`);
       }
 
       return {
@@ -69,34 +70,14 @@ export function createChatService(deps: {
   };
 }
 
-function collectPageContext(books: BooksService, bookId: string, pageNumber: number) {
-  const pages: { pageNumber: number; text: string }[] = [];
-  const start = Math.max(1, pageNumber - (PREVIEW_PAGES - 1));
-  for (let page = start; page <= pageNumber; page += 1) {
-    try {
-      const data = books.getPageText(bookId, page);
-      pages.push({ pageNumber: data.page_number, text: data.text });
-    } catch {
-      continue;
-    }
-  }
-  return pages;
-}
+const CHAT_HANDLERS: Record<
+  ProviderType,
+  (input: { apiKey: string; model: string; prompt: string }) => Promise<string>
+> = {
+  gemini: sendGeminiChat,
+  openrouter: sendOpenRouterChat
+};
 
-function buildPrompt(input: {
-  sectionTitle: string | null;
-  contextText: string;
-  question: string;
-}): string {
-  const section = input.sectionTitle ? `Section: ${input.sectionTitle}\n` : "";
-  return [
-    "You are a helpful mentor helping a reader understand a technical book.",
-    "Use the provided context to answer their question.",
-    "If the answer is not in the context, explain what to look for in the reading.",
-    "",
-    section + "Context:",
-    input.contextText,
-    "",
-    `Question: ${input.question}`
-  ].join("\n");
+function isProviderType(value: string): value is ProviderType {
+  return value === "gemini" || value === "openrouter";
 }
