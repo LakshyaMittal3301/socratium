@@ -1,6 +1,6 @@
 # Socratium Architecture
 ## Purpose
-Socratium is a local-first reading companion that uses Socratic prompts and retrieval practice to make technical reading active. It should work with any PDF and any OpenAI-style provider, including local servers.
+Socratium is a local-first reading companion that uses Socratic prompts and retrieval practice to make technical reading active. The long-term goal is provider-agnostic support (OpenAI-style and local servers); the current implementation uses Gemini.
 
 ## Principles
 - Local-only, no accounts, no telemetry, no cloud services.
@@ -62,6 +62,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 2. `/api/books/upload` stores a PDF, extracts text/outline, and builds page map.
 3. `/api/books` returns a list of uploaded books.
 4. `/api/providers` manages Gemini providers; `/api/chat` uses the active provider.
+5. Chat includes the current page plus the previous two pages of text as context.
 
 ## Sectioning Strategy (Current)
 - Deferred; using outline + current page for context instead of precomputed sections.
@@ -88,6 +89,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 ## AI Provider Handling (Current)
 - Provider config stored locally in SQLite; API keys encrypted at rest.
 - Gemini is supported via the `@google/genai` SDK.
+- Provider configuration is managed from the Library UI modal.
 
 ## Working Agreements for AI Agents
 - Make one focused change at a time; confirm before big refactors.

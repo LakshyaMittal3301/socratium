@@ -17,10 +17,11 @@
 - Phase 2: PDF ingest pipeline (upload, storage, text extraction, page map).
 - Phase 3: Reader shell (PDF center + chat panel + current section header).
 - Phase 4: React-PDF rendering + page tracking.
-- Phase 5: Outline mapping to current page.
-- Phase 6: Chat MVP + API.
-- Phase 7: AI integration + prompt refinement.
-- Phase 8: Cleanup, tests, and docs update pass.
+- Phase 5: Outline mapping to current page + outline sidebar.
+- Phase 6: Chat UI + page context.
+- Phase 7: Gemini integration + provider settings UI.
+- Phase 8: Reader UX polish (outline jump, zoom, chat UX tweaks).
+- Phase 9: Cleanup, tests, and docs update pass.
 
 ## Done
 - Added a root `.gitignore` for local data, dependencies, and PDFs.
@@ -35,5 +36,7 @@
 - Implemented PDF extraction, page map storage, and debug endpoints.
 - Refactored extraction flow into a dedicated service with repo helpers.
 - Added debug endpoint and UI for page map and per-page text sampling.
-- Added chat stub API and UI with page context excerpt.
+- Added React-PDF reader with page tracking and section title updates.
+- Added outline sidebar with current section highlight.
+- Added chat UI with page context excerpt.
 - Added AI provider configuration (Gemini) and chat integration with page context.
