@@ -8,12 +8,20 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - Small, incremental changes; one feature at a time.
 - Prefer simple, readable code over abstractions.
 - Keep docs and the roadmap up to date with actual behavior.
-- Full rewrite planned; no data migration required.
+- Full rewrite planned; no data migration required yet.
+- Productization requires readable code with clear ownership and tests.
 
 ## MVP UX (Planned)
 - Library: upload PDF, manage AI providers, and open a book.
 - Reader: PDF in the center, outline on the left, chat panel on the right.
 - Chat uses current page + outline context with Gemini responses.
+
+## Product Phase (Phase 2) Goals
+- Product-grade UI and reader experience (Ant Design).
+- Better chat UX with persistent threads per book.
+- OpenRouter provider support before generic base-url providers.
+- Active provider remains global, switchable from any screen.
+- Focus on understandability: smaller functions, clear flows, and reviewable steps.
 
 ## Current System
 ### Frontend
@@ -90,12 +98,14 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - Provider config stored locally in SQLite; API keys encrypted at rest.
 - Gemini is supported via the `@google/genai` SDK.
 - Provider configuration is managed from the Library UI modal.
+- Phase 2 adds OpenRouter first; generic OpenAI-compatible providers follow later.
 
 ## Working Agreements for AI Agents
 - Make one focused change at a time; confirm before big refactors.
 - Keep code explicit and readable; add minimal comments only when needed.
 - Avoid new frameworks, cloud services, auth, and analytics.
 - Keep provider handling generic and backend-only for secrets.
+- Prefer small PRs/steps with review and manual testing.
 - Update `ARCHITECTURE.md` when behavior or flows change.
 - Update `ROADMAP.md` when a task is completed or scope changes.
 

@@ -1,7 +1,8 @@
 # Roadmap
 
 ## Direction
-- Full rewrite is approved; no data migration required.
+- Full rewrite is approved; no data migration required yet.
+- Build a product-grade UX with a clean, understandable codebase.
 - Make the reader generic across PDFs (no bundled book required).
 - Keep the provider layer interchangeable and backend-only for secrets.
 - Keep sectioning deferred; use outline + current page for context in MVP.
@@ -10,18 +11,48 @@
 - Add minimal tests around extraction and provider configuration.
 
 ## Next
-- Improve reader UX: outline jump, chat polish, and AI prompt tuning.
+- Define product phase plan and document the step-by-step rewrite goals.
 
 ## Plan
-- Phase 1: Backend skeleton with clean module layout, SQLite schema reset, health route.
-- Phase 2: PDF ingest pipeline (upload, storage, text extraction, page map).
-- Phase 3: Reader shell (PDF center + chat panel + current section header).
-- Phase 4: React-PDF rendering + page tracking.
-- Phase 5: Outline mapping to current page + outline sidebar.
-- Phase 6: Chat UI + page context.
-- Phase 7: Gemini integration + provider settings UI.
-- Phase 8: Reader UX polish (outline jump, zoom, chat UX tweaks).
-- Phase 9: Cleanup, tests, and docs update pass.
+### Phase 1 (Complete): MVP Rewrite
+- Backend skeleton with clean module layout, SQLite schema reset, health route.
+- PDF ingest pipeline (upload, storage, text extraction, page map).
+- Reader shell (PDF center + chat panel + current section header).
+- React-PDF rendering + page tracking.
+- Outline mapping to current page + outline sidebar.
+- Chat UI + page context.
+- Gemini integration + provider settings UI.
+- Reader UX polish (outline jump, zoom, chat UX tweaks).
+- Cleanup, tests, and docs update pass.
+
+### Phase 2 (Now): Productization Plan
+Core goal: product-grade UX + simpler, more understandable codebase.
+
+1) Foundation and code quality
+- Remove destructive schema resets; add migrations or safe schema versioning.
+- Simplify service/repo flows with clear naming and small functions.
+- Strengthen provider abstraction while keeping secrets backend-only.
+- Add minimal tests around extraction + provider configuration.
+
+2) Provider work (OpenRouter first)
+- Add OpenRouter provider type and end-to-end support.
+- Keep active provider global (switchable from a modal accessible on all screens).
+- Document the provider model clearly in `ARCHITECTURE.md`.
+- Add a short comparison workflow for evaluating model quality.
+
+3) UI overhaul (Ant Design)
+- Introduce Ant Design components and layout tokens.
+- Rebuild Library + Reader shell with consistent navigation and spacing.
+- Keep UX focused: fast, readable, minimal clutter.
+
+4) Reader-first iteration cycle
+- Reader pass: navigation clarity, outline jump, last-read position.
+- Chat pass: thread list per book, message formatting, prompt tuning v1.
+- Repeat: reader pass, then chat pass, until UX feels product-ready.
+
+5) Non-core improvements (end or opportunistic)
+- Rename/delete book, rename/delete chat thread.
+- Small UX quality-of-life improvements that don't disrupt the core flow.
 
 ## Done
 - Added a root `.gitignore` for local data, dependencies, and PDFs.
