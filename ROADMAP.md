@@ -11,7 +11,7 @@
 - Add minimal tests around extraction and provider configuration.
 
 ## Next
-- Define product phase plan and document the step-by-step rewrite goals.
+- Start Ant Design UI overhaul (Library + Reader shell).
 
 ## Plan
 ### Phase 1 (Complete): MVP Rewrite
@@ -70,7 +70,9 @@ Core goal: product-grade UX + simpler, more understandable codebase.
 - Added React-PDF reader with page tracking and section title updates.
 - Added outline sidebar with current section highlight.
 - Added chat UI with page context excerpt.
-- Added AI provider configuration (Gemini) and chat integration with page context.
+- Added AI provider configuration and chat integration with page context.
 - Added OpenRouter provider support with a model list endpoint.
 - Enforced single active provider + updated `updated_at` on activation.
 - Moved provider DTOs into `shared/types/providers.ts` for clarity.
+- Refactored provider and chat services with provider adapters and clearer helpers.
+- Refactored book flow to separate extraction, storage, and debug routes.

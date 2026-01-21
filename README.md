@@ -1,6 +1,6 @@
 # Socratium
 
-Socratium is a local-first reading companion that uses Socratic prompts and retrieval practice to make technical reading active. It runs entirely on your machine and currently supports Gemini via the backend.
+Socratium is a local-first reading companion that uses Socratic prompts and retrieval practice to make technical reading active. It runs entirely on your machine and currently supports Gemini and OpenRouter via the backend.
 
 ## Quickstart (Development)
 1. `cd backend`
@@ -15,14 +15,14 @@ The backend runs on `http://127.0.0.1:8787`. The React dev server runs on `http:
 - Frontend debug panel is visible only when `VITE_DEBUG=true`.
 
 ## Status
-The app is in a full rewrite. Upload → reader → chat is wired, with AI provider configuration in the library screen.
+The app is in a full rewrite. Upload → reader → chat is wired, with AI provider configuration in the library and reader screens.
 Providers: Gemini and OpenRouter (model list available in settings).
 
 ## Productization (Phase 2)
 The next phase focuses on product-grade UX and a more understandable codebase.
 We will:
 - adopt Ant Design for UI consistency,
-- add OpenRouter support (generic providers later),
+- OpenRouter support is in place (generic providers later),
 - improve reader UX, then chat UX iteratively,
 - keep API keys backend-only and encrypted at rest,
 - take small, reviewable steps with manual tests.

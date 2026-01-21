@@ -1,6 +1,6 @@
 # Socratium Architecture
 ## Purpose
-Socratium is a local-first reading companion that uses Socratic prompts and retrieval practice to make technical reading active. The long-term goal is provider-agnostic support (OpenAI-style and local servers); the current implementation uses Gemini.
+Socratium is a local-first reading companion that uses Socratic prompts and retrieval practice to make technical reading active. The long-term goal is provider-agnostic support (OpenAI-style and local servers); the current implementation supports Gemini and OpenRouter.
 
 ## Principles
 - Local-only, no accounts, no telemetry, no cloud services.
@@ -14,7 +14,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 ## MVP UX (Planned)
 - Library: upload PDF, manage AI providers, and open a book.
 - Reader: PDF in the center, outline on the left, chat panel on the right.
-- Chat uses current page + outline context with Gemini responses.
+- Chat uses current page + outline context with the active provider.
 
 ## Product Phase (Phase 2) Goals
 - Product-grade UI and reader experience (Ant Design).
@@ -39,7 +39,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `services/`: business logic and orchestration.
 - `repositories/`: SQL queries and data access.
 - `db/`: database connection and schema setup.
-- `lib/`: shared utilities (paths, time, errors).
+- `lib/`: shared utilities (paths, time, errors, config, storage).
 - `lib/limits.ts` holds common limit clamping helpers for debug endpoints.
 - `app.ts` decorates `app.db`, `app.repos`, and `app.services` for consistent injection.
 - `repositories/index.ts` and `services/index.ts` centralize dependency creation.
@@ -53,9 +53,10 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `app.ts` initializes the DB, decorates `app.db`, `app.repos`, and `app.services`, registers plugins, error handlers, and routes.
 - `routes/*` handle request/response, use `schemas/*` for validation, and call `app.services`.
 - `services/*` contain business logic and call `app.repos`.
-- `services/extraction.ts` handles PDF text extraction, outline capture, and page map persistence.
+- `services/extraction.ts` extracts PDF data and returns text/outline/page map payloads.
+- `services/chat/*` contains provider adapters and prompt/context helpers.
 - `repositories/*` run SQL queries and return plain records.
-- Shared API DTOs are imported from `shared/types/api.ts` using `import type`.
+- Shared API DTOs are imported from `shared/types/api.ts` and `shared/types/providers.ts` using `import type`.
 
 ### Storage
 - `backend/data/socratium.db`: SQLite database (rewrite schema).
@@ -67,7 +68,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 
 ## Data Flow (Today)
 1. Server start: `initDb()` creates tables for the rewrite schema.
-2. `/api/books/upload` stores a PDF, extracts text/outline, and builds page map.
+2. `/api/books/upload` stores a PDF, extracts text/outline, and persists page map + metadata.
 3. `/api/books` returns a list of uploaded books.
 4. `/api/providers` manages AI providers; `/api/chat` uses the active provider.
 5. Chat includes the current page plus the previous two pages of text as context.
@@ -85,7 +86,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `POST /api/chat`: return a chat reply with page context.
 - `GET /api/providers`: list AI providers.
 - `POST /api/providers`: create a provider.
-- `POST /api/providers/test`: test a Gemini API key + model.
+- `POST /api/providers/test`: test a provider API key + model.
 - `POST /api/providers/openrouter/models`: list OpenRouter models (requires API key).
 - `PATCH /api/providers/:providerId/activate`: set active provider.
 - `DELETE /api/providers/:providerId`: remove a provider.
@@ -99,7 +100,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - Provider config stored locally in SQLite; API keys encrypted at rest.
 - Gemini is supported via the `@google/genai` SDK.
 - OpenRouter is supported via the `@openrouter/sdk` SDK.
-- Provider configuration is managed from the Library UI modal.
+- Provider configuration is managed from a modal in the Library and Reader UI.
 - OpenRouter model catalog is fetched via `/api/providers/openrouter/models`.
 - A single active provider is enforced via a unique DB index; activation updates `updated_at`.
 - Shared provider DTOs live in `shared/types/providers.ts`.
