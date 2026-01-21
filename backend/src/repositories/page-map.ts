@@ -3,7 +3,7 @@ import type { PageMapEntry } from "../lib/pdf";
 
 export type PageMapRepository = {
   replaceForBook: (bookId: string, entries: PageMapEntry[]) => void;
-  listForBook: (bookId: string) => PageMapEntry[];
+  listRange: (bookId: string, startPage: number, endPage: number) => PageMapEntry[];
   getEntry: (bookId: string, pageNumber: number) => PageMapEntry | null;
 };
 
@@ -29,12 +29,15 @@ export function createPageMapRepository(db: import("better-sqlite3").Database): 
       });
       tx();
     },
-    listForBook(bookId: string): PageMapEntry[] {
+    listRange(bookId: string, startPage: number, endPage: number): PageMapEntry[] {
+      if (endPage < startPage) {
+        return [];
+      }
       return db
         .prepare(
-          "SELECT page_number, start_offset, end_offset FROM page_map WHERE book_id = ? ORDER BY page_number"
+          "SELECT page_number, start_offset, end_offset FROM page_map WHERE book_id = ? AND page_number BETWEEN ? AND ? ORDER BY page_number"
         )
-        .all(bookId) as PageMapEntry[];
+        .all(bookId, startPage, endPage) as PageMapEntry[];
     },
     getEntry(bookId: string, pageNumber: number): PageMapEntry | null {
       return (

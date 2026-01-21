@@ -1,5 +1,6 @@
 import { badRequest } from "../lib/errors";
 import { decryptSecret } from "../lib/secrets";
+import { CHAT_PREVIEW_PAGES } from "../lib/config";
 import type { BooksService } from "./books";
 import type { ProvidersService } from "./providers";
 import type { ChatRequest, ChatResponse } from "@shared/types/api";
@@ -9,7 +10,7 @@ import { buildPrompt } from "./chat/prompt";
 import { sendGeminiChat } from "./chat/providers/gemini";
 import { sendOpenRouterChat } from "./chat/providers/openrouter";
 
-const DEFAULT_PREVIEW_PAGES = 3;
+const DEFAULT_PREVIEW_PAGES = CHAT_PREVIEW_PAGES;
 
 export type ChatService = {
   reply: (input: ChatRequest) => Promise<ChatResponse>;

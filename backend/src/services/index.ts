@@ -14,10 +14,7 @@ export type Services = {
 };
 
 export function createServices(repos: Repositories): Services {
-  const extraction = createExtractionService({
-    books: repos.books,
-    pageMap: repos.pageMap
-  });
+  const extraction = createExtractionService();
   const books = createBooksService({ books: repos.books, extraction, pageMap: repos.pageMap });
   const providers = createProvidersService({ providers: repos.providers });
   return {

@@ -1,6 +1,7 @@
 import Fastify, { FastifyInstance } from "fastify";
 import multipart from "@fastify/multipart";
 import { initDb, db } from "./db";
+import { MAX_UPLOAD_BYTES } from "./lib/config";
 import { createServices } from "./services";
 import { createRepositories } from "./repositories";
 import { AppError } from "./lib/errors";
@@ -33,7 +34,7 @@ function registerServices(app: FastifyInstance): void {
 function registerPlugins(app: FastifyInstance): void {
   app.register(multipart, {
     limits: {
-      fileSize: 50 * 1024 * 1024
+      fileSize: MAX_UPLOAD_BYTES
     }
   });
 }

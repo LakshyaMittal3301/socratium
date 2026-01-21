@@ -14,18 +14,9 @@ export function collectPageContext(
   const pages: PageContextEntry[] = [];
   const start = Math.max(1, pageNumber - (previewPages - 1));
   for (let page = start; page <= pageNumber; page += 1) {
-    const data = tryGetPageText(books, bookId, page);
-    if (data) {
-      pages.push({ pageNumber: data.page_number, text: data.text });
-    }
+    const data = books.tryGetPageText(bookId, page);
+    if (!data) continue;
+    pages.push({ pageNumber: data.page_number, text: data.text });
   }
   return pages;
-}
-
-function tryGetPageText(books: BooksService, bookId: string, pageNumber: number) {
-  try {
-    return books.getPageText(bookId, pageNumber);
-  } catch {
-    return null;
-  }
 }

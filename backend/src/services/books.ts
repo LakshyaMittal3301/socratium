@@ -1,10 +1,6 @@
-import fs from "fs";
-import path from "path";
 import crypto from "crypto";
-import { pipeline } from "stream/promises";
-import { getBooksDir } from "../lib/paths";
-import { nowIso } from "../lib/time";
 import { notFound } from "../lib/errors";
+import { createPdfReadStream, readBookText, savePdfStream } from "../lib/storage";
 import type { BooksRepository, BookRecord } from "../repositories/books";
 import type { PageMapRepository } from "../repositories/page-map";
 import type { UploadInput, UploadResult } from "../types/books";
@@ -17,27 +13,19 @@ import type {
   PageTextResponse
 } from "@shared/types/api";
 import type { ExtractionService } from "./extraction";
+import { buildBookRecord, requireBook, toBookMeta } from "./books/helpers";
 
 export type BooksService = {
   createFromUpload: (input: UploadInput) => Promise<UploadResult>;
   list: () => BookRecord[];
   getMeta: (bookId: string) => BookMetaResponse;
-  getPdfPath: (bookId: string) => string;
+  getPdfStream: (bookId: string) => NodeJS.ReadableStream;
   getTextSample: (bookId: string, limit: number) => BookTextSampleResponse;
   getOutline: (bookId: string) => BookOutlineResponse;
   getPageMap: (bookId: string, limit: number) => PageMapResponse;
   getPageText: (bookId: string, pageNumber: number) => PageTextResponse;
+  tryGetPageText: (bookId: string, pageNumber: number) => PageTextResponse | null;
 };
-
-function buildBookRecord(id: string, filename: string, pdfPath: string): BookRecord {
-  return {
-    id,
-    title: path.parse(filename).name,
-    source_filename: filename,
-    pdf_path: pdfPath,
-    created_at: nowIso()
-  };
-}
 
 export function createBooksService(deps: {
   books: BooksRepository;
@@ -47,40 +35,31 @@ export function createBooksService(deps: {
   return {
     async createFromUpload(input: UploadInput): Promise<UploadResult> {
       const bookId = crypto.randomUUID();
-      const pdfPath = path.join(getBooksDir(), `${bookId}.pdf`);
-
-      await pipeline(input.stream, fs.createWriteStream(pdfPath));
-
+      const pdfPath = await savePdfStream(bookId, input.stream);
       deps.books.insert(buildBookRecord(bookId, input.filename, pdfPath));
-      await deps.extraction.extractAndPersist(bookId, pdfPath);
+      const extracted = await deps.extraction.extract(bookId, pdfPath);
+      deps.pageMap.replaceForBook(bookId, extracted.pageMap);
+      deps.books.updateExtraction(bookId, extracted.textPath, extracted.outlineJson);
 
       return { id: bookId };
     },
     list(): BookRecord[] {
       return deps.books.list();
     },
-    getMeta(bookId: string): BookMetaResponse {
+    getMeta(bookId: string) {
       const book = requireBook(deps.books, bookId);
-      return {
-        id: book.id,
-        title: book.title,
-        source_filename: book.source_filename,
-        pdf_path: book.pdf_path,
-        created_at: book.created_at,
-        has_text: Boolean(book.text_path),
-        has_outline: Boolean(book.outline_json)
-      };
+      return toBookMeta(book);
     },
-    getPdfPath(bookId: string): string {
+    getPdfStream(bookId: string): NodeJS.ReadableStream {
       const book = requireBook(deps.books, bookId);
-      return book.pdf_path;
+      return createPdfReadStream(book.pdf_path);
     },
     getTextSample(bookId: string, limit: number): BookTextSampleResponse {
       const book = requireBook(deps.books, bookId);
       if (!book.text_path) {
         throw notFound("Text not available");
       }
-      const text = fs.readFileSync(book.text_path, "utf8");
+      const text = readBookText(book.text_path);
       return { text: text.slice(0, limit) };
     },
     getOutline(bookId: string): BookOutlineResponse {
@@ -92,31 +71,42 @@ export function createBooksService(deps: {
     },
     getPageMap(bookId: string, limit: number): PageMapResponse {
       requireBook(deps.books, bookId);
-      const entries = deps.pageMap.listForBook(bookId).slice(0, limit);
+      const resolvedLimit = Math.max(0, limit);
+      const entries = deps.pageMap.listRange(bookId, 1, resolvedLimit);
       return { entries };
     },
     getPageText(bookId: string, pageNumber: number): PageTextResponse {
-      const book = requireBook(deps.books, bookId);
-      if (!book.text_path) {
-        throw notFound("Text not available");
+      return getPageTextForBook(deps, bookId, pageNumber);
+    },
+    tryGetPageText(bookId: string, pageNumber: number): PageTextResponse | null {
+      try {
+        return getPageTextForBook(deps, bookId, pageNumber);
+      } catch {
+        return null;
       }
-      const entry = deps.pageMap.getEntry(bookId, pageNumber);
-      if (!entry) {
-        throw notFound("Page not found");
-      }
-      const text = fs.readFileSync(book.text_path, "utf8");
-      return {
-        page_number: entry.page_number,
-        text: text.slice(entry.start_offset, entry.end_offset)
-      };
     }
   };
 }
 
-function requireBook(repos: BooksRepository, bookId: string) {
-  const book = repos.getById(bookId);
-  if (!book) {
-    throw notFound("Book not found");
+function getPageTextForBook(
+  deps: {
+    books: BooksRepository;
+    pageMap: PageMapRepository;
+  },
+  bookId: string,
+  pageNumber: number
+): PageTextResponse {
+  const book = requireBook(deps.books, bookId);
+  if (!book.text_path) {
+    throw notFound("Text not available");
   }
-  return book;
+  const entry = deps.pageMap.getEntry(bookId, pageNumber);
+  if (!entry) {
+    throw notFound("Page not found");
+  }
+  const text = readBookText(book.text_path);
+  return {
+    page_number: entry.page_number,
+    text: text.slice(entry.start_offset, entry.end_offset)
+  };
 }
