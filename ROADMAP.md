@@ -72,3 +72,5 @@ Core goal: product-grade UX + simpler, more understandable codebase.
 - Added chat UI with page context excerpt.
 - Added AI provider configuration (Gemini) and chat integration with page context.
 - Added OpenRouter provider support with a model list endpoint.
+- Enforced single active provider + updated `updated_at` on activation.
+- Moved provider DTOs into `shared/types/providers.ts` for clarity.

@@ -101,6 +101,8 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - OpenRouter is supported via the `@openrouter/sdk` SDK.
 - Provider configuration is managed from the Library UI modal.
 - OpenRouter model catalog is fetched via `/api/providers/openrouter/models`.
+- A single active provider is enforced via a unique DB index; activation updates `updated_at`.
+- Shared provider DTOs live in `shared/types/providers.ts`.
 - Generic OpenAI-compatible providers follow later.
 
 ## Working Agreements for AI Agents
