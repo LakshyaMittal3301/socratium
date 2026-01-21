@@ -17,7 +17,7 @@ export function createChatService(deps: {
 }): ChatService {
   return {
     async reply(input: ChatRequest): Promise<ChatResponse> {
-      const provider = deps.providers.getActive();
+      const provider = deps.providers.getActiveRecord();
       if (!provider) {
         throw badRequest("No active AI provider configured");
       }

@@ -18,13 +18,19 @@ export type CreateProviderInput = {
   baseUrl?: string | null;
 };
 
+export type TestProviderInput = {
+  providerType: ProviderType;
+  model: string;
+  apiKey: string;
+};
+
 export type ProvidersService = {
   list: () => ProviderDto[];
   create: (input: CreateProviderInput) => ProviderDto;
   setActive: (id: string) => ProviderDto;
   remove: (id: string) => void;
-  getActive: () => ProviderRecord | null;
-  testKey: (input: { providerType: ProviderType; model: string; apiKey: string }) => Promise<string>;
+  getActiveRecord: () => ProviderRecord | null;
+  testKey: (input: TestProviderInput) => Promise<string>;
   listOpenRouterModels: (apiKey: string) => Promise<OpenRouterModel[]>;
 };
 
@@ -89,14 +95,10 @@ export function createProvidersService(repos: {
     remove(id: string): void {
       repos.providers.remove(id);
     },
-    getActive(): ProviderRecord | null {
+    getActiveRecord(): ProviderRecord | null {
       return repos.providers.getActive();
     },
-    async testKey(input: {
-      providerType: ProviderType;
-      model: string;
-      apiKey: string;
-    }): Promise<string> {
+    async testKey(input: TestProviderInput): Promise<string> {
       if (!isSupportedProviderType(input.providerType)) {
         throw badRequest("Unsupported provider type");
       }
