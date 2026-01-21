@@ -8,7 +8,7 @@ import {
 } from "../lib/openrouter";
 import { badRequest, notFound } from "../lib/errors";
 import type { ProvidersRepository, ProviderRecord } from "../repositories/providers";
-import type { OpenRouterModel, ProviderDto, ProviderType } from "@shared/types/api";
+import type { OpenRouterModel, ProviderDto, ProviderType } from "@shared/types/providers";
 
 export type CreateProviderInput = {
   providerType: ProviderType;

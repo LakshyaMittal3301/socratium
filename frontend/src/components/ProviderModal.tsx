@@ -5,7 +5,7 @@ import type {
   OpenRouterModelsResponse,
   ProviderDto,
   ProviderType
-} from "@shared/types/api";
+} from "@shared/types/providers";
 
 type ProviderModalProps = {
   isOpen: boolean;

@@ -16,7 +16,7 @@ import type {
   OpenRouterModelsResponse,
   ProviderTestRequest,
   ProviderTestResponse
-} from "@shared/types/api";
+} from "@shared/types/providers";
 
 export function registerProviderRoutes(app: FastifyInstance): void {
   app.get(
