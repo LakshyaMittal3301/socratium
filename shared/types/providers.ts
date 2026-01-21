@@ -22,6 +22,7 @@ export type CreateProviderRequest = {
 };
 
 export type ProviderTestRequest = {
+  // When we add local/OpenAI-compatible providers, include baseUrl here.
   provider_type: ProviderType;
   model: string;
   apiKey: string;
