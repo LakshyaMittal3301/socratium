@@ -30,21 +30,23 @@ export const providerListSchema = {
 export const createProviderSchema = {
   type: "object",
   properties: {
+    provider_type: { type: "string" },
     name: { type: "string" },
     model: { type: "string" },
     apiKey: { type: "string" },
     baseUrl: { anyOf: [{ type: "string" }, { type: "null" }] }
   },
-  required: ["name", "model", "apiKey"]
+  required: ["provider_type", "name", "model", "apiKey"]
 };
 
 export const providerTestRequestSchema = {
   type: "object",
   properties: {
+    provider_type: { type: "string" },
     model: { type: "string" },
     apiKey: { type: "string" }
   },
-  required: ["model", "apiKey"]
+  required: ["provider_type", "model", "apiKey"]
 };
 
 export const providerTestResponseSchema = {
@@ -54,4 +56,33 @@ export const providerTestResponseSchema = {
     message: { type: "string" }
   },
   required: ["ok", "message"]
+};
+
+export const openRouterModelsRequestSchema = {
+  type: "object",
+  properties: {
+    apiKey: { type: "string" }
+  },
+  required: ["apiKey"]
+};
+
+export const openRouterModelSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string" },
+    name: { type: "string" },
+    context_length: { type: "number" }
+  },
+  required: ["id"]
+};
+
+export const openRouterModelsResponseSchema = {
+  type: "object",
+  properties: {
+    models: {
+      type: "array",
+      items: openRouterModelSchema
+    }
+  },
+  required: ["models"]
 };

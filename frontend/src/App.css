@@ -143,6 +143,12 @@
   gap: 1rem;
 }
 
+.reader__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .reader__eyebrow {
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -444,6 +450,30 @@
   padding: 0.55rem 0.75rem;
   background: #fffaf4;
   font-family: inherit;
+}
+
+.provider-form select {
+  border: 1px solid #d7cfbf;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  background: #fffaf4;
+  font-family: inherit;
+}
+
+.provider-form__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.provider-form__row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.provider-form__note {
+  margin: 0;
+  font-size: 0.85rem;
 }
 
 .provider-form__actions {

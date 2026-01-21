@@ -71,3 +71,4 @@ Core goal: product-grade UX + simpler, more understandable codebase.
 - Added outline sidebar with current section highlight.
 - Added chat UI with page context excerpt.
 - Added AI provider configuration (Gemini) and chat integration with page context.
+- Added OpenRouter provider support with a model list endpoint.

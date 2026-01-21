@@ -57,7 +57,7 @@ export type PageTextResponse = {
   text: string;
 };
 
-export type ProviderType = "gemini";
+export type ProviderType = "gemini" | "openrouter";
 
 export type ProviderDto = {
   id: string;
@@ -73,6 +73,7 @@ export type ProviderDto = {
 export type ProviderListResponse = ProviderDto[];
 
 export type CreateProviderRequest = {
+  provider_type: ProviderType;
   name: string;
   model: string;
   apiKey: string;
@@ -80,6 +81,7 @@ export type CreateProviderRequest = {
 };
 
 export type ProviderTestRequest = {
+  provider_type: ProviderType;
   model: string;
   apiKey: string;
 };
@@ -87,6 +89,20 @@ export type ProviderTestRequest = {
 export type ProviderTestResponse = {
   ok: boolean;
   message: string;
+};
+
+export type OpenRouterModel = {
+  id: string;
+  name?: string;
+  context_length?: number;
+};
+
+export type OpenRouterModelsRequest = {
+  apiKey: string;
+};
+
+export type OpenRouterModelsResponse = {
+  models: OpenRouterModel[];
 };
 
 export type ChatRequest = {

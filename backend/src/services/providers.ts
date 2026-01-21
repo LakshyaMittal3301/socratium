@@ -1,11 +1,17 @@
 import crypto from "crypto";
 import { nowIso } from "../lib/time";
 import { encryptSecret } from "../lib/secrets";
+import {
+  OPENROUTER_BASE_URL,
+  createOpenRouterClient,
+  getOpenRouterRequestHeaders
+} from "../lib/openrouter";
 import { badRequest, notFound } from "../lib/errors";
 import type { ProvidersRepository, ProviderRecord } from "../repositories/providers";
-import type { ProviderDto, ProviderType } from "@shared/types/api";
+import type { OpenRouterModel, ProviderDto, ProviderType } from "@shared/types/api";
 
 export type CreateProviderInput = {
+  providerType: ProviderType;
   name: string;
   model: string;
   apiKey: string;
@@ -18,10 +24,11 @@ export type ProvidersService = {
   setActive: (id: string) => ProviderDto;
   remove: (id: string) => void;
   getActive: () => ProviderRecord | null;
-  testKey: (input: { model: string; apiKey: string }) => Promise<string>;
+  testKey: (input: { providerType: ProviderType; model: string; apiKey: string }) => Promise<string>;
+  listOpenRouterModels: (apiKey: string) => Promise<OpenRouterModel[]>;
 };
 
-const PROVIDER_TYPE: ProviderType = "gemini";
+const SUPPORTED_PROVIDER_TYPES: ProviderType[] = ["gemini", "openrouter"];
 
 export function createProvidersService(repos: {
   providers: ProvidersRepository;
@@ -34,6 +41,9 @@ export function createProvidersService(repos: {
       if (!input.name.trim()) {
         throw badRequest("Provider name is required");
       }
+      if (!isSupportedProviderType(input.providerType)) {
+        throw badRequest("Unsupported provider type");
+      }
       if (!input.model.trim()) {
         throw badRequest("Model is required");
       }
@@ -45,8 +55,10 @@ export function createProvidersService(repos: {
       const record = repos.providers.insert({
         id: crypto.randomUUID(),
         name: input.name.trim(),
-        provider_type: PROVIDER_TYPE,
-        base_url: input.baseUrl ?? null,
+        provider_type: input.providerType,
+        base_url:
+          input.baseUrl ??
+          (input.providerType === "openrouter" ? OPENROUTER_BASE_URL : null),
         model: input.model.trim(),
         api_key_encrypted: encryptSecret(input.apiKey.trim()),
         is_active: 0,
@@ -80,13 +92,28 @@ export function createProvidersService(repos: {
     getActive(): ProviderRecord | null {
       return repos.providers.getActive();
     },
-    async testKey(input: { model: string; apiKey: string }): Promise<string> {
+    async testKey(input: {
+      providerType: ProviderType;
+      model: string;
+      apiKey: string;
+    }): Promise<string> {
+      if (!isSupportedProviderType(input.providerType)) {
+        throw badRequest("Unsupported provider type");
+      }
       if (!input.model.trim()) {
         throw badRequest("Model is required");
       }
       if (!input.apiKey.trim()) {
         throw badRequest("API key is required");
       }
+
+      if (input.providerType === "openrouter") {
+        return testOpenRouter({
+          apiKey: input.apiKey.trim(),
+          model: input.model.trim()
+        });
+      }
+
       const { GoogleGenAI } = await import("@google/genai");
       const ai = new GoogleGenAI({ apiKey: input.apiKey.trim() });
       const response = await ai.models.generateContent({
@@ -94,6 +121,22 @@ export function createProvidersService(repos: {
         contents: "Reply with the single word OK."
       });
       return response.text ?? "OK";
+    },
+    async listOpenRouterModels(apiKey: string): Promise<OpenRouterModel[]> {
+      if (!apiKey.trim()) {
+        throw badRequest("API key is required");
+      }
+
+      const response = await fetch(`${OPENROUTER_BASE_URL}/models`, {
+        method: "GET",
+        headers: getOpenRouterRequestHeaders(apiKey.trim())
+      });
+      if (!response.ok) {
+        throw badRequest(`OpenRouter request failed (${response.status})`);
+      }
+
+      const payload = (await response.json()) as unknown;
+      return normalizeOpenRouterModels(payload);
     }
   };
 }
@@ -109,4 +152,52 @@ function toDto(record: ProviderRecord): ProviderDto {
     created_at: record.created_at,
     updated_at: record.updated_at
   };
+}
+
+function isSupportedProviderType(value: string): value is ProviderType {
+  return SUPPORTED_PROVIDER_TYPES.includes(value as ProviderType);
+}
+
+async function testOpenRouter(input: { apiKey: string; model: string }): Promise<string> {
+  const client = await createOpenRouterClient(input.apiKey);
+  const completion = await client.chat.send({
+    model: input.model,
+    messages: [
+      {
+        role: "user",
+        content: "Reply with the single word OK."
+      }
+    ],
+    stream: false
+  });
+  return completion.choices?.[0]?.message?.content ?? "OK";
+}
+
+function normalizeOpenRouterModels(payload: unknown): OpenRouterModel[] {
+  const rawList = Array.isArray(payload)
+    ? payload
+    : isRecord(payload) && Array.isArray(payload.data)
+      ? payload.data
+      : [];
+
+  const models: OpenRouterModel[] = [];
+  for (const item of rawList) {
+    if (!isRecord(item)) continue;
+    const id = typeof item.id === "string" ? item.id : null;
+    if (!id) continue;
+    const name = typeof item.name === "string" ? item.name : undefined;
+    const contextLength =
+      typeof item.context_length === "number" ? item.context_length : undefined;
+    models.push({
+      id,
+      name,
+      context_length: contextLength
+    });
+  }
+
+  return models.sort((a, b) => a.id.localeCompare(b.id));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }

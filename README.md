@@ -16,6 +16,7 @@ The backend runs on `http://127.0.0.1:8787`. The React dev server runs on `http:
 
 ## Status
 The app is in a full rewrite. Upload → reader → chat is wired, with AI provider configuration in the library screen.
+Providers: Gemini and OpenRouter (model list available in settings).
 
 ## Productization (Phase 2)
 The next phase focuses on product-grade UX and a more understandable codebase.

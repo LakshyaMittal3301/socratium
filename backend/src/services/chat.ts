@@ -1,5 +1,6 @@
 import { badRequest } from "../lib/errors";
 import { decryptSecret } from "../lib/secrets";
+import { createOpenRouterClient } from "../lib/openrouter";
 import type { BooksService } from "./books";
 import type { ProvidersService } from "./providers";
 import type { ChatRequest, ChatResponse } from "@shared/types/api";
@@ -20,13 +21,7 @@ export function createChatService(deps: {
       if (!provider) {
         throw badRequest("No active AI provider configured");
       }
-      if (provider.provider_type !== "gemini") {
-        throw badRequest("Unsupported provider type");
-      }
 
-      const apiKey = decryptSecret(provider.api_key_encrypted);
-      const { GoogleGenAI } = await import("@google/genai");
-      const ai = new GoogleGenAI({ apiKey });
       const sectionTitle = input.sectionTitle?.trim() || null;
       const pages = collectPageContext(deps.books, input.bookId, input.pageNumber);
       const contextText = pages.map((page) => `Page ${page.pageNumber}:\n${page.text}`).join("\n\n");
@@ -36,13 +31,36 @@ export function createChatService(deps: {
         question: input.message
       });
 
-      const response = await ai.models.generateContent({
-        model: provider.model,
-        contents: prompt
-      });
+      let reply = "No response generated.";
+      if (provider.provider_type === "openrouter") {
+        const apiKey = decryptSecret(provider.api_key_encrypted);
+        const client = await createOpenRouterClient(apiKey);
+        const completion = await client.chat.send({
+          model: provider.model,
+          messages: [
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          stream: false
+        });
+        reply = completion.choices?.[0]?.message?.content ?? reply;
+      } else if (provider.provider_type === "gemini") {
+        const apiKey = decryptSecret(provider.api_key_encrypted);
+        const { GoogleGenAI } = await import("@google/genai");
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({
+          model: provider.model,
+          contents: prompt
+        });
+        reply = response.text ?? reply;
+      } else {
+        throw badRequest("Unsupported provider type");
+      }
 
       return {
-        reply: response.text ?? "No response generated.",
+        reply,
         pageNumber: input.pageNumber,
         sectionTitle,
         contextText

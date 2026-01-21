@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import PdfViewer from "../components/PdfViewer";
 import ChatPanel from "../components/ChatPanel";
 import OutlinePanel from "../components/OutlinePanel";
+import ProviderModal from "../components/ProviderModal";
 import type { OutlineEntry } from "../components/OutlinePanel";
 
 type ReaderPageProps = {
@@ -15,6 +16,7 @@ function ReaderPage({ book, onBack }: ReaderPageProps) {
   const [totalPages, setTotalPages] = useState<number | null>(null);
   const [outline, setOutline] = useState<OutlineNode[] | null>(null);
   const [outlineError, setOutlineError] = useState<string | null>(null);
+  const [showProviders, setShowProviders] = useState(false);
   const fileUrl = `/api/books/${book.id}/file`;
 
   useEffect(() => {
@@ -62,9 +64,14 @@ function ReaderPage({ book, onBack }: ReaderPageProps) {
             {totalPages ? ` / ${totalPages}` : ""}
           </p>
         </div>
-        <button type="button" onClick={onBack}>
-          Back to library
-        </button>
+        <div className="reader__actions">
+          <button type="button" onClick={() => setShowProviders(true)}>
+            AI Settings
+          </button>
+          <button type="button" onClick={onBack}>
+            Back to library
+          </button>
+        </div>
       </header>
 
       <div className="reader__layout">
@@ -86,6 +93,7 @@ function ReaderPage({ book, onBack }: ReaderPageProps) {
           <ChatPanel bookId={book.id} currentPage={currentPage} sectionTitle={sectionTitle} />
         </aside>
       </div>
+      <ProviderModal isOpen={showProviders} onClose={() => setShowProviders(false)} />
     </div>
   );
 }

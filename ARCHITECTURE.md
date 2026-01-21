@@ -69,7 +69,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 1. Server start: `initDb()` creates tables for the rewrite schema.
 2. `/api/books/upload` stores a PDF, extracts text/outline, and builds page map.
 3. `/api/books` returns a list of uploaded books.
-4. `/api/providers` manages Gemini providers; `/api/chat` uses the active provider.
+4. `/api/providers` manages AI providers; `/api/chat` uses the active provider.
 5. Chat includes the current page plus the previous two pages of text as context.
 
 ## Sectioning Strategy (Current)
@@ -82,10 +82,11 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `GET /api/books/:bookId`: metadata with `has_text`/`has_outline`.
 - `GET /api/books/:bookId/file`: stream the original PDF for the reader.
 - `GET /api/books/:bookId/outline`: return outline JSON for section context.
-- `POST /api/chat`: return a Gemini chat reply with page context.
-- `GET /api/providers`: list AI providers (Gemini for now).
+- `POST /api/chat`: return a chat reply with page context.
+- `GET /api/providers`: list AI providers.
 - `POST /api/providers`: create a provider.
 - `POST /api/providers/test`: test a Gemini API key + model.
+- `POST /api/providers/openrouter/models`: list OpenRouter models (requires API key).
 - `PATCH /api/providers/:providerId/activate`: set active provider.
 - `DELETE /api/providers/:providerId`: remove a provider.
 - `GET /api/debug/books/:bookId/text`: return a text sample (debug).
@@ -97,8 +98,10 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 ## AI Provider Handling (Current)
 - Provider config stored locally in SQLite; API keys encrypted at rest.
 - Gemini is supported via the `@google/genai` SDK.
+- OpenRouter is supported via the `@openrouter/sdk` SDK.
 - Provider configuration is managed from the Library UI modal.
-- Phase 2 adds OpenRouter first; generic OpenAI-compatible providers follow later.
+- OpenRouter model catalog is fetched via `/api/providers/openrouter/models`.
+- Generic OpenAI-compatible providers follow later.
 
 ## Working Agreements for AI Agents
 - Make one focused change at a time; confirm before big refactors.

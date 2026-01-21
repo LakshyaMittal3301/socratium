@@ -1,6 +1,8 @@
 import { FastifyInstance } from "fastify";
 import {
   createProviderSchema,
+  openRouterModelsRequestSchema,
+  openRouterModelsResponseSchema,
   providerListSchema,
   providerSchema,
   providerTestRequestSchema,
@@ -10,6 +12,8 @@ import { errorResponseSchema } from "../schemas/errors";
 import type {
   CreateProviderRequest,
   ProviderDto,
+  OpenRouterModelsRequest,
+  OpenRouterModelsResponse,
   ProviderTestRequest,
   ProviderTestResponse
 } from "@shared/types/api";
@@ -43,6 +47,7 @@ export function registerProviderRoutes(app: FastifyInstance): void {
     async (request): Promise<ProviderDto> => {
       const body = request.body as CreateProviderRequest;
       return app.services.providers.create({
+        providerType: body.provider_type,
         name: body.name,
         model: body.model,
         apiKey: body.apiKey,
@@ -66,10 +71,30 @@ export function registerProviderRoutes(app: FastifyInstance): void {
     async (request): Promise<ProviderTestResponse> => {
       const body = request.body as ProviderTestRequest;
       const message = await app.services.providers.testKey({
+        providerType: body.provider_type,
         model: body.model,
         apiKey: body.apiKey
       });
       return { ok: true, message };
+    }
+  );
+
+  app.post(
+    "/api/providers/openrouter/models",
+    {
+      schema: {
+        body: openRouterModelsRequestSchema,
+        response: {
+          200: openRouterModelsResponseSchema,
+          400: errorResponseSchema,
+          500: errorResponseSchema
+        }
+      }
+    },
+    async (request): Promise<OpenRouterModelsResponse> => {
+      const body = request.body as OpenRouterModelsRequest;
+      const models = await app.services.providers.listOpenRouterModels(body.apiKey);
+      return { models };
     }
   );
 
