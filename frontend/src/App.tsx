@@ -130,7 +130,7 @@ function App() {
           </div>
         );
       }
-      return <ReaderPage book={activeBook} onBack={() => setActiveView("library")} />;
+      return <ReaderPage book={activeBook} />;
     }
     if (activeView === "settings") {
       return <SettingsPage />;
@@ -216,8 +216,10 @@ function App() {
             </Button>
           </Space>
         </Header>
-        <Content className="app-content">
-          <div className="page-container">{content}</div>
+        <Content className={`app-content${isReaderView ? " app-content--reader" : ""}`}>
+          <div className={`page-container${isReaderView ? " page-container--reader" : ""}`}>
+            {content}
+          </div>
         </Content>
       </Layout>
       <ProviderModal isOpen={showProviders} onClose={() => setShowProviders(false)} />

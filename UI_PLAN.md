@@ -12,7 +12,7 @@
   - Library
   - Reader
   - Settings
-- Reader page contains outline (left), PDF (center), chat (right).
+- Reader page uses a 2-column layout: PDF (center/left, dominant) + chat (right).
 - Chat is not a separate page; it lives inside Reader.
 
 ## Visual System
@@ -33,10 +33,11 @@
   - `Sider` shows nav + compact app branding.
   - `Header` shows page title and context actions.
 - Reader page:
-  - 3-column grid within `Content`.
-  - Left: outline (scrollable).
-  - Center: PDF viewer (largest column).
+  - 2-column layout within `Content`.
+  - Left: PDF viewer (dominant).
   - Right: chat panel (scrollable).
+  - No in-page reader header.
+  - PDF has a paper-like frame and subtle shadow.
 
 ## Component Plan (Ant Design)
 - Layout: `Layout`, `Sider`, `Menu`, `Header`, `Content`.
