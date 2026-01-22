@@ -1,0 +1,140 @@
+.provider-modal .ant-modal-content {
+  background: var(--surface-bg);
+  border: 1px solid var(--border-muted);
+  box-shadow: 0 18px 44px rgba(18, 14, 10, 0.18);
+}
+
+.provider-modal .ant-modal-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-muted);
+}
+
+.provider-modal .ant-modal-title {
+  font-weight: 600;
+}
+
+.provider-modal__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.provider-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.provider-modal__title {
+  margin: 0;
+}
+
+.provider-modal__subtitle {
+  margin: 0;
+}
+
+.provider-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.provider-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.provider-modal__field .ant-select,
+.provider-modal__field .ant-input,
+.provider-modal__field .ant-input-affix-wrapper {
+  width: 100%;
+}
+
+.provider-modal__row {
+  width: 100%;
+}
+
+.provider-modal__row .ant-input {
+  flex: 1;
+}
+
+.provider-modal__note {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.provider-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.provider-modal__alert {
+  margin-top: 0.5rem;
+}
+
+.provider-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.provider-row {
+  border: 1px solid var(--border-muted);
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  background: var(--surface-elevated);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.provider-row--active {
+  border-color: #dcc9b0;
+  background: #f9f1e4;
+}
+
+.provider-row__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.provider-row__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.provider-row__model {
+  word-break: break-word;
+}
+
+.provider-row__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.provider-modal .ant-input,
+.provider-modal .ant-input-affix-wrapper,
+.provider-modal .ant-select-selector {
+  background: #fffaf4;
+  border-color: var(--border-muted);
+}
+
+.provider-modal .ant-input-affix-wrapper-focused,
+.provider-modal .ant-select-focused .ant-select-selector {
+  border-color: #cbb79d;
+  box-shadow: 0 0 0 2px rgba(203, 183, 157, 0.2);
+}
+
+@media (max-width: 1024px) {
+  .provider-modal__layout {
+    grid-template-columns: 1fr;
+  }
+}

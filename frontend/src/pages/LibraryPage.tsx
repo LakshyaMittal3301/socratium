@@ -4,6 +4,7 @@ import { Button, Card, Col, Empty, Modal, Row, Space, Typography, Upload } from 
 import type { BookDto } from "@shared/types/api";
 import DebugPanel from "../components/DebugPanel";
 import BookCover from "../components/BookCover";
+import { formatDate } from "../lib/ui";
 
 type LibraryPageProps = {
   books: BookDto[];
@@ -147,29 +148,6 @@ function LibraryPage({
       </Modal>
     </div>
   );
-}
-
-function formatDate(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  const day = date.getDate();
-  const month = date.toLocaleString("en-US", { month: "short" });
-  const year = date.getFullYear();
-  return `${day}${getOrdinalSuffix(day)} ${month}, ${year}`;
-}
-
-function getOrdinalSuffix(day: number): string {
-  if (day >= 11 && day <= 13) return "th";
-  switch (day % 10) {
-    case 1:
-      return "st";
-    case 2:
-      return "nd";
-    case 3:
-      return "rd";
-    default:
-      return "th";
-  }
 }
 
 export default LibraryPage;

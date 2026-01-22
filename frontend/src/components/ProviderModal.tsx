@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Button, Input, Modal, Select, Space, Tag, Typography } from "antd";
+import { Modal } from "antd";
 import type {
   CreateProviderRequest,
   OpenRouterModel,
@@ -7,6 +7,8 @@ import type {
   ProviderDto,
   ProviderType
 } from "@shared/types/providers";
+import ProviderForm from "./providers/ProviderForm";
+import ProviderList from "./providers/ProviderList";
 
 type ProviderModalProps = {
   isOpen: boolean;
@@ -183,7 +185,7 @@ function ProviderModal({ isOpen, onClose }: ProviderModalProps) {
 
   if (!isOpen) return null;
 
-  const hasActiveProvider = providers.some((provider) => provider.is_active);
+  const showNoActiveWarning = !loading && providers.length > 0 && !providers.some((provider) => provider.is_active);
 
   return (
     <Modal
@@ -196,163 +198,34 @@ function ProviderModal({ isOpen, onClose }: ProviderModalProps) {
       destroyOnClose
     >
       <div className="provider-modal__layout">
-        <section className="provider-modal__section">
-          <Typography.Title level={5} className="provider-modal__title">
-            Add provider
-          </Typography.Title>
-          <Typography.Text type="secondary" className="provider-modal__subtitle">
-            Add your provider and store the API key locally.
-          </Typography.Text>
-          <form onSubmit={handleCreate} className="provider-modal__form">
-            <div className="provider-modal__field">
-              <Typography.Text strong>Provider</Typography.Text>
-              <Select
-                value={providerType}
-                onChange={(value) => setProviderType(value as ProviderType)}
-                options={[
-                  { value: "gemini", label: "Gemini" },
-                  { value: "openrouter", label: "OpenRouter" }
-                ]}
-                size="middle"
-              />
-            </div>
-            <div className="provider-modal__field">
-              <Typography.Text strong>Name</Typography.Text>
-              <Input
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder={providerType === "openrouter" ? "My OpenRouter" : "My Gemini"}
-                size="middle"
-              />
-            </div>
-            <div className="provider-modal__field">
-              <Typography.Text strong>Model</Typography.Text>
-              {providerType === "openrouter" ? (
-                <Space className="provider-modal__row" align="start">
-                  <Input
-                    list={modelListId}
-                    value={model}
-                    onChange={(event) => setModel(event.target.value)}
-                    placeholder="openai/gpt-5.2"
-                    size="middle"
-                  />
-                  <Button size="middle" onClick={handleLoadModels} loading={modelsLoading}>
-                    Load models
-                  </Button>
-                </Space>
-              ) : (
-                <Input value={model} onChange={(event) => setModel(event.target.value)} size="middle" />
-              )}
-              {providerType === "openrouter" && openRouterModels.length > 0 && (
-                <datalist id={modelListId}>
-                  {openRouterModels.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name ?? item.id}
-                    </option>
-                  ))}
-                </datalist>
-              )}
-              {providerType === "openrouter" && (
-                <Typography.Text type="secondary" className="provider-modal__note">
-                  {openRouterModels.length > 0
-                    ? `${openRouterModels.length} models loaded.`
-                    : "Load models to browse the OpenRouter catalog."}
-                </Typography.Text>
-              )}
-              {modelError && (
-                <Typography.Text type="danger" className="provider-modal__note">
-                  {modelError}
-                </Typography.Text>
-              )}
-            </div>
-            <div className="provider-modal__field">
-              <Typography.Text strong>API key</Typography.Text>
-              <Input.Password
-                value={apiKey}
-                onChange={(event) => setApiKey(event.target.value)}
-                placeholder={
-                  providerType === "openrouter"
-                    ? "Paste your OpenRouter API key"
-                    : "Paste your Gemini API key"
-                }
-                size="middle"
-              />
-            </div>
-            {testMessage && (
-              <Alert
-                type="success"
-                showIcon
-                message={`Test success: ${testMessage}`}
-                className="provider-modal__alert"
-              />
-            )}
-            {error && (
-              <Alert type="error" showIcon message={error} className="provider-modal__alert" />
-            )}
-            <div className="provider-modal__actions">
-              <Space>
-                <Button size="middle" onClick={handleTest} loading={testing}>
-                  Test key
-                </Button>
-                <Button size="middle" type="primary" htmlType="submit" loading={saving}>
-                  Save provider
-                </Button>
-              </Space>
-            </div>
-          </form>
-        </section>
-
-        <section className="provider-modal__section">
-          <Typography.Title level={5} className="provider-modal__title">
-            Providers
-          </Typography.Title>
-          <Typography.Text type="secondary" className="provider-modal__subtitle">
-            Choose the active model for new chats.
-          </Typography.Text>
-          {!loading && providers.length > 0 && !hasActiveProvider && (
-            <Alert
-              type="warning"
-              showIcon
-              message="No active provider selected. Activate one to enable chat."
-              className="provider-modal__alert"
-            />
-          )}
-          {loading ? (
-            <Typography.Text type="secondary">Loading…</Typography.Text>
-          ) : providers.length === 0 ? (
-            <Typography.Text type="secondary">No providers configured yet.</Typography.Text>
-          ) : (
-            <div className="provider-modal__list">
-              {providers.map((provider) => (
-                <div
-                  key={provider.id}
-                  className={`provider-row${provider.is_active ? " provider-row--active" : ""}`}
-                >
-                  <div className="provider-row__meta">
-                    <div className="provider-row__title">
-                      <Typography.Text strong>{provider.name}</Typography.Text>
-                      {provider.is_active && <Tag color="green">Active</Tag>}
-                      <Tag>{provider.provider_type}</Tag>
-                    </div>
-                    <Typography.Text type="secondary" className="provider-row__model">
-                      {provider.model}
-                    </Typography.Text>
-                  </div>
-                  <div className="provider-row__actions">
-                    {!provider.is_active && (
-                      <Button size="middle" onClick={() => handleActivate(provider.id)}>
-                        Activate
-                      </Button>
-                    )}
-                    <Button size="middle" danger onClick={() => handleDelete(provider.id)}>
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+        <ProviderForm
+          providerType={providerType}
+          name={name}
+          model={model}
+          apiKey={apiKey}
+          openRouterModels={openRouterModels}
+          modelsLoading={modelsLoading}
+          modelError={modelError}
+          testMessage={testMessage}
+          error={error}
+          saving={saving}
+          testing={testing}
+          modelListId={modelListId}
+          onProviderTypeChange={(value) => setProviderType(value)}
+          onNameChange={setName}
+          onModelChange={setModel}
+          onApiKeyChange={setApiKey}
+          onLoadModels={handleLoadModels}
+          onTest={handleTest}
+          onSubmit={handleCreate}
+        />
+        <ProviderList
+          providers={providers}
+          loading={loading}
+          showNoActiveWarning={showNoActiveWarning}
+          onActivate={handleActivate}
+          onDelete={handleDelete}
+        />
       </div>
     </Modal>
   );

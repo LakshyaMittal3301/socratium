@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, Layout, Menu, Space, Typography } from "antd";
+import { Button, Space, Typography } from "antd";
 import {
   BookOutlined,
   ReadOutlined,
@@ -11,9 +11,8 @@ import LibraryPage from "./pages/LibraryPage";
 import ReaderPage from "./pages/ReaderPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProviderModal from "./components/ProviderModal";
+import AppShell from "./components/layout/AppShell";
 import "./App.css";
-
-const { Header, Sider, Content } = Layout;
 
 type AppView = "library" | "reader" | "settings";
 
@@ -167,70 +166,32 @@ function App() {
     </Space>
   );
 
-  return (
-    <Layout className="app-shell">
-      <Sider
-        className="app-sider"
-        collapsed={navCollapsed}
-        collapsible
-        onCollapse={(value) => setNavCollapsed(value)}
-        collapsedWidth={72}
-        width={240}
-      >
-        <div className="app-brand">
-          <span className="app-brand__mark">S</span>
-          {!navCollapsed && <span className="app-brand__name">Socratium</span>}
-        </div>
-        <Menu
-          className="app-menu"
-          mode="inline"
-          selectedKeys={[activeView]}
-          items={menuItems}
-          onClick={(event) => {
-            const nextView = event.key as AppView;
-            if (nextView === "reader" && !activeBook) {
-              setActiveView("library");
-              return;
-            }
-            setActiveView(nextView);
-          }}
-        />
-      </Sider>
+  function handleSelectView(view: string) {
+    const nextView = view as AppView;
+    if (nextView === "reader" && !activeBook) {
+      setActiveView("library");
+      return;
+    }
+    setActiveView(nextView);
+  }
 
-      <Layout>
-        <Header className={`app-header${isReaderView ? " app-header--reader" : ""}`}>
-          {isReaderView ? (
-            <>
-              <Typography.Title
-                level={4}
-                className="app-header__compact-title"
-                ellipsis={{ tooltip: headerTitle }}
-              >
-                {headerTitle}
-              </Typography.Title>
-              {headerActions}
-            </>
-          ) : (
-            <>
-              <div className="app-header__title">
-                <Typography.Text className="app-header__eyebrow" type="secondary">
-                  Socratium
-                </Typography.Text>
-                <Typography.Title level={4}>{headerTitle}</Typography.Title>
-                <Typography.Text type="secondary">{headerSubtitle}</Typography.Text>
-              </div>
-              {headerActions}
-            </>
-          )}
-        </Header>
-        <Content className={`app-content${isReaderView ? " app-content--reader" : ""}`}>
-          <div className={`page-container${isReaderView ? " page-container--reader" : ""}`}>
-            {content}
-          </div>
-        </Content>
-      </Layout>
+  return (
+    <>
+      <AppShell
+        navCollapsed={navCollapsed}
+        onCollapse={setNavCollapsed}
+        activeView={activeView}
+        menuItems={menuItems}
+        onSelectView={handleSelectView}
+        headerTitle={headerTitle}
+        headerSubtitle={headerSubtitle}
+        isReaderView={isReaderView}
+        headerActions={headerActions}
+      >
+        {content}
+      </AppShell>
       <ProviderModal isOpen={showProviders} onClose={() => setShowProviders(false)} />
-    </Layout>
+    </>
   );
 }
 

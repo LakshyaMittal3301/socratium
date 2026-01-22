@@ -1,0 +1,35 @@
+.debug-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.debug-controls select {
+  border: 1px solid #d7cfbf;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  background: #fffaf4;
+  min-width: 220px;
+}
+
+.debug-controls input[type="number"] {
+  border: 1px solid #d7cfbf;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  background: #fffaf4;
+  width: 140px;
+}
+
+.debug-output {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #efeae1;
+  background: #fffdf9;
+  max-height: 260px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-family: "SF Mono", "Roboto Mono", monospace;
+  font-size: 0.85rem;
+}
