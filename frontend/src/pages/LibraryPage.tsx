@@ -1,15 +1,20 @@
-import type { FormEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { UploadProps } from "antd";
+import { Button, Card, Col, Empty, Modal, Row, Space, Typography, Upload } from "antd";
 import type { BookDto } from "@shared/types/api";
 import DebugPanel from "../components/DebugPanel";
+import BookCover from "../components/BookCover";
 
 type LibraryPageProps = {
   books: BookDto[];
   uploading: boolean;
   status: string | null;
   error: string | null;
-  onUpload: (event: FormEvent<HTMLFormElement>) => void;
-  onRefresh: () => void | Promise<void>;
+  onUpload: (file: File) => Promise<boolean>;
   onOpenBook: (bookId: string) => void;
+  showUpload: boolean;
+  onOpenUpload: () => void;
+  onCloseUpload: () => void;
   debugEnabled: boolean;
 };
 
@@ -19,63 +24,152 @@ function LibraryPage({
   status,
   error,
   onUpload,
-  onRefresh,
   onOpenBook,
+  showUpload,
+  onOpenUpload,
+  onCloseUpload,
   debugEnabled
 }: LibraryPageProps) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const uploadProps = useMemo<UploadProps>(
+    () => ({
+      accept: "application/pdf",
+      maxCount: 1,
+      beforeUpload: (file) => {
+        setSelectedFile(file);
+        setLocalError(null);
+        return false;
+      },
+      onRemove: () => {
+        setSelectedFile(null);
+      }
+    }),
+    []
+  );
+
+  useEffect(() => {
+    if (!showUpload) {
+      setSelectedFile(null);
+      setLocalError(null);
+    }
+  }, [showUpload]);
+
+  async function handleUploadConfirm() {
+    if (!selectedFile) {
+      setLocalError("Pick a PDF to upload.");
+      return;
+    }
+    const ok = await onUpload(selectedFile);
+    if (ok) {
+      onCloseUpload();
+      setSelectedFile(null);
+    }
+  }
+
+  function handleBookOpen(bookId: string) {
+    onOpenBook(bookId);
+  }
+
   return (
     <div className="library">
-      <section className="panel">
-        <h2>Upload</h2>
-        <form onSubmit={onUpload} className="upload">
-          <input type="file" name="pdf" accept="application/pdf" />
-          <button type="submit" disabled={uploading}>
-            {uploading ? "Uploading..." : "Upload PDF"}
-          </button>
-        </form>
-        {status && <p className="status">{status}</p>}
-        {error && <p className="error">{error}</p>}
-      </section>
-
-      <section className="panel">
-        <div className="panel__header">
-          <h2>Books</h2>
-          <div className="panel__actions">
-            <button type="button" onClick={onRefresh}>
-              Refresh
-            </button>
-          </div>
-        </div>
-        {books.length === 0 ? (
-          <p className="muted">No books uploaded yet.</p>
-        ) : (
-          <ul className="book-list">
-            {books.map((book) => (
-              <li key={book.id} className="book">
-                <div>
-                  <div className="book__title">{book.title}</div>
-                  <div className="book__meta">{book.source_filename}</div>
-                  <div className="book__meta">{formatDate(book.created_at)}</div>
+      {books.length === 0 ? (
+        <Card className="library-empty">
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="No books uploaded yet."
+          />
+          <Button type="primary" onClick={onOpenUpload}>
+            Add your first book
+          </Button>
+        </Card>
+      ) : (
+        <Row gutter={[16, 16]}>
+          {books.map((book) => (
+            <Col key={book.id} xs={24} sm={12} lg={6}>
+              <Card
+                hoverable
+                className="library-book-card"
+                onClick={() => handleBookOpen(book.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    handleBookOpen(book.id);
+                  }
+                }}
+                cover={<BookCover fileUrl={`/api/books/${book.id}/file`} title={book.title} />}
+              >
+              <div className="library-book-content">
+                <Typography.Text className="library-book__title">{book.title}</Typography.Text>
+                <Typography.Text type="secondary" className="library-book__filename">
+                  {book.source_filename}
+                </Typography.Text>
+                <div className="library-book__footer">
+                  <Typography.Text type="secondary" className="library-book__date">
+                    Uploaded: {formatDate(book.created_at)}
+                  </Typography.Text>
                 </div>
-                <div className="book__actions">
-                  <button type="button" onClick={() => onOpenBook(book.id)}>
-                    Open
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+      )}
 
       {debugEnabled && <DebugPanel books={books} />}
+
+      <Modal
+        open={showUpload}
+        onCancel={onCloseUpload}
+        onOk={handleUploadConfirm}
+        okText="Upload PDF"
+        okButtonProps={{ size: "large" }}
+        cancelButtonProps={{ size: "large" }}
+        confirmLoading={uploading}
+        title="Add a book"
+      >
+        <div className="library-upload-modal">
+          <Upload {...uploadProps}>
+            <Button size="large">Select PDF</Button>
+          </Upload>
+          {selectedFile && (
+            <Typography.Text type="secondary">
+              Selected: {selectedFile.name}
+            </Typography.Text>
+          )}
+          {localError && <Typography.Text type="danger">{localError}</Typography.Text>}
+          {status && <Typography.Text type="success">{status}</Typography.Text>}
+          {error && <Typography.Text type="danger">{error}</Typography.Text>}
+        </div>
+      </Modal>
     </div>
   );
 }
 
 function formatDate(value: string): string {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+  if (Number.isNaN(date.getTime())) return value;
+  const day = date.getDate();
+  const month = date.toLocaleString("en-US", { month: "short" });
+  const year = date.getFullYear();
+  return `${day}${getOrdinalSuffix(day)} ${month}, ${year}`;
+}
+
+function getOrdinalSuffix(day: number): string {
+  if (day >= 11 && day <= 13) return "th";
+  switch (day % 10) {
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
+  }
 }
 
 export default LibraryPage;

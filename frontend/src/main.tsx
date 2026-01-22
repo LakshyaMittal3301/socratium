@@ -16,12 +16,17 @@ createRoot(document.getElementById("root")!).render(
           colorText: "#1e1a15",
           colorTextSecondary: "#6f6458",
           colorBorder: "#e6dccb",
-          colorPrimary: "#8a6a3a",
-          fontSize: 16,
+          colorPrimary: "#5b3a24",
+          fontSize: 17,
           borderRadius: 12,
           fontFamily: '"IBM Plex Sans", "Segoe UI", sans-serif'
         },
         components: {
+          Button: {
+            controlHeight: 42,
+            fontSize: 16,
+            paddingInline: 18
+          },
           Layout: {
             headerBg: "#f6f1e7",
             bodyBg: "#f6f1e7",

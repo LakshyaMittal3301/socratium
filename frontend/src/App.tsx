@@ -27,6 +27,7 @@ function App() {
   const [activeView, setActiveView] = useState<AppView>("library");
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [showProviders, setShowProviders] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
 
   useEffect(() => {
     void loadBooks();
@@ -40,6 +41,12 @@ function App() {
       setActiveView("library");
     }
   }, [activeBookId, activeBook]);
+
+  useEffect(() => {
+    if (activeView !== "library") {
+      setShowUpload(false);
+    }
+  }, [activeView]);
 
   async function loadBooks() {
     setError(null);
@@ -55,18 +62,9 @@ function App() {
     }
   }
 
-  async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleUpload(file: File): Promise<boolean> {
     setStatus(null);
     setError(null);
-
-    const form = event.currentTarget;
-    const fileInput = form.elements.namedItem("pdf") as HTMLInputElement | null;
-    const file = fileInput?.files?.[0];
-    if (!file) {
-      setError("Pick a PDF to upload.");
-      return;
-    }
 
     setUploading(true);
     try {
@@ -78,10 +76,11 @@ function App() {
         throw new Error(data?.error?.message || `Upload failed (${res.status})`);
       }
       setStatus("Uploaded.");
-      if (fileInput) fileInput.value = "";
       await loadBooks();
+      return true;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Upload failed");
+      return false;
     } finally {
       setUploading(false);
     }
@@ -143,8 +142,10 @@ function App() {
         status={status}
         error={error}
         onUpload={handleUpload}
-        onRefresh={loadBooks}
         onOpenBook={handleOpenBook}
+        showUpload={showUpload}
+        onOpenUpload={() => setShowUpload(true)}
+        onCloseUpload={() => setShowUpload(false)}
         debugEnabled={debugEnabled}
       />
     );
@@ -195,9 +196,20 @@ function App() {
             <Typography.Text type="secondary">{headerSubtitle}</Typography.Text>
           </div>
           <Space>
+            {activeView === "library" && (
+              <>
+                <Button size="large" onClick={loadBooks}>
+                  Refresh
+                </Button>
+                <Button type="primary" size="large" onClick={() => setShowUpload(true)}>
+                  Add book
+                </Button>
+              </>
+            )}
             <Button
               type="default"
               icon={<SlidersOutlined />}
+              size="large"
               onClick={() => setShowProviders(true)}
             >
               AI Settings

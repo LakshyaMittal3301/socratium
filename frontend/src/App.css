@@ -130,6 +130,99 @@
   margin-bottom: 1.5rem;
 }
 
+.library-grid {
+  margin-top: 1rem;
+}
+
+
+.library-book-card {
+  border: 1px solid var(--border-muted);
+  background: var(--surface-elevated);
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.library-book-content {
+  display: grid;
+  grid-template-rows: 2.2rem 2.8rem 2.2rem;
+  height: 100%;
+}
+
+.library-book__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 2.2rem;
+  color: var(--text-primary);
+}
+
+.library-book__filename {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
+  max-height: 2.7em;
+  color: var(--text-secondary);
+}
+
+.library-book__footer {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--border-muted);
+}
+
+.library-book__date {
+  font-size: 0.85rem;
+}
+
+.library-book-card .ant-card-body {
+  padding: 0.85rem 1rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.library-empty {
+  border: 1px dashed var(--border-muted);
+  background: var(--surface-bg);
+  text-align: center;
+}
+
+.library-upload-modal {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.book-cover {
+  display: grid;
+  place-items: center;
+  background: var(--surface-bg);
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--border-muted);
+  height: 210px;
+  overflow: hidden;
+}
+
+.book-cover canvas {
+  border-radius: 8px;
+  box-shadow: 0 8px 14px rgba(20, 15, 10, 0.12);
+}
+
+.book-cover__placeholder {
+  width: 140px;
+  height: 180px;
+  border-radius: 8px;
+  background: #efe5d6;
+  border: 1px solid var(--border-muted);
+}
+
 .panel__header {
   display: flex;
   align-items: center;
