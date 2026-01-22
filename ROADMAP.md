@@ -11,18 +11,18 @@
 - Add minimal tests around extraction and provider configuration.
 
 ## Next
-- Start Ant Design UI overhaul (Library + Reader shell).
+- Finalize chat panel (Ant Design X) and add reader controls.
 
 ## Plan
 ### Phase 1 (Complete): MVP Rewrite
 - Backend skeleton with clean module layout, SQLite schema reset, health route.
 - PDF ingest pipeline (upload, storage, text extraction, page map).
-- Reader shell (PDF center + chat panel + current section header).
+- Reader shell (PDF + chat panel).
 - React-PDF rendering + page tracking.
-- Outline mapping to current page + outline sidebar.
+- Outline mapping to current page for section detection (UI hidden).
 - Chat UI + page context.
 - Gemini integration + provider settings UI.
-- Reader UX polish (outline jump, zoom, chat UX tweaks).
+- Reader UX polish (ongoing in Phase 2).
 - Cleanup, tests, and docs update pass.
 
 ### Phase 2 (Now): Productization Plan
@@ -76,3 +76,9 @@ Core goal: product-grade UX + simpler, more understandable codebase.
 - Moved provider DTOs into `shared/types/providers.ts` for clarity.
 - Refactored provider and chat services with provider adapters and clearer helpers.
 - Refactored book flow to separate extraction, storage, and debug routes.
+- Added Ant Design layout shell (AppShell) and theme tokens.
+- Split frontend styles into layout/pages/components for clarity.
+- Library page rebuilt with card grid + PDF thumbnails.
+- Reader page rebuilt as a 2-column layout (PDF + chat).
+- Chat panel rebuilt with Ant Design X (`Bubble.List`, `Sender`) and `x-markdown`.
+- AI settings modal rebuilt with provider form + provider list.

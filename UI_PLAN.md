@@ -4,7 +4,7 @@
 - Product-grade UI with Ant Design components.
 - Warm paper-like visual tone, compact density.
 - Persistent left navigation; Reader is primary focus.
-- Reader + Chat share a single page with a 3-column layout.
+- Reader + Chat share a single page with a 2-column layout.
 - Easy to extend for future features (outline actions, backlinks, threads).
 
 ## IA and Navigation
@@ -42,12 +42,12 @@
 ## Component Plan (Ant Design)
 - Layout: `Layout`, `Sider`, `Menu`, `Header`, `Content`.
 - Library:
-  - Upload: `Upload`, `Button`.
-  - Book list: `List` or `Table` with compact rows.
-  - Provider settings: `Modal`, `Form`, `Select`.
+  - Upload: `Upload`, `Button`, `Modal`.
+  - Book list: card grid with thumbnails.
+  - Provider settings: `Modal`, `Select`, `Input`, `Button`.
 - Reader:
-  - Outline: `Tree` or custom `List`.
-  - Chat: placeholder container; `@ant-design/pro-chat` later.
+  - Chat: `@ant-design/x` (`Bubble.List`, `Sender`).
+  - Markdown: `@ant-design/x-markdown` for assistant responses.
 - Settings:
   - Provider management section and future preferences.
 
@@ -57,15 +57,15 @@
    - Build AppShell with persistent nav.
    - Create empty pages (Library, Reader, Settings).
 2) Library page
-   - Upload block + book list with compact rows.
+   - Upload modal + card grid with thumbnails.
    - Provider modal integrated with Ant Design components.
 3) Reader page
-   - 3-column layout; center PDF viewer dominates.
-   - Outline on left, chat on right (static shell).
+   - 2-column layout; PDF viewer dominates.
+   - Chat panel on the right.
 4) Settings page
    - Provider config summary + placeholders for future preferences.
 5) Chat enhancements (later)
-   - Integrate `@ant-design/pro-chat` and message formatting.
+   - Streaming support and richer message actions.
 6) Iterative polish
    - Typography, spacing, color tuning.
    - Usability pass on Reader and Library.
@@ -80,10 +80,10 @@ Context captured from docs you provided:
 - `@ant-design/x-markdown`: streaming-friendly Markdown renderer with code highlighting, mermaid, formulas; compatible with CommonMark/GFM. Useful for rich assistant responses.
 - `@ant-design/x-sdk`: conversation data flow helpers and model/agent integration; optional for now since we already have backend chat APIs.
 
-Potential fit for Socratium:
-- Likely adopt `@ant-design/x` for the chat UI (message list + input + actions).
-- Use `@ant-design/x-markdown` inside assistant messages to render responses cleanly.
-- Defer `@ant-design/x-sdk` unless we want frontend-managed chat state or streaming support.
+Current usage in Socratium:
+- `@ant-design/x` for chat UI (`Bubble.List`, `Sender`).
+- `@ant-design/x-markdown` for assistant message rendering.
+- `@ant-design/x-sdk` deferred until streaming support.
 
 Open items:
 - Review the `x-sdk` intro doc (link provided) before deciding on SDK adoption.

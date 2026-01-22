@@ -11,10 +11,10 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - Full rewrite planned; no data migration required yet.
 - Productization requires readable code with clear ownership and tests.
 
-## MVP UX (Planned)
+## MVP UX (Current)
 - Library: upload PDF, manage AI providers, and open a book.
-- Reader: PDF in the center, outline on the left, chat panel on the right.
-- Chat uses current page + outline context with the active provider.
+- Reader: PDF on the left/center with a chat panel on the right (outline is hidden).
+- Chat uses current page + outline-derived section context with the active provider.
 
 ## Product Phase (Phase 2) Goals
 - Product-grade UI and reader experience (Ant Design).
@@ -26,7 +26,9 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 ## Current System
 ### Frontend
 - React + Vite app in `frontend/`.
-- UI rewrite in progress; current focus is layout and wiring core flows.
+- Ant Design layout shell with a custom theme (`frontend/src/theme.ts`).
+- Chat uses Ant Design X (`Bubble.List`, `Sender`) with `@ant-design/x-markdown`.
+- UI styles are split into `frontend/src/styles/layout.css`, `pages/`, and `components/`.
 
 ### Backend
 - Fastify app built in `backend/src/app.ts`, started by `backend/src/server.ts`.
@@ -75,6 +77,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 
 ## Sectioning Strategy (Current)
 - Deferred; using outline + current page for context instead of precomputed sections.
+- Outline is fetched for section detection but not shown in the reader UI.
 
 ## API Surface (Current)
 - `GET /api/health`: server health check.
@@ -100,7 +103,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - Provider config stored locally in SQLite; API keys encrypted at rest.
 - Gemini is supported via the `@google/genai` SDK.
 - OpenRouter is supported via the `@openrouter/sdk` SDK.
-- Provider configuration is managed from a modal in the Library and Reader UI.
+- Provider configuration is managed from a modal accessible via the header.
 - OpenRouter model catalog is fetched via `/api/providers/openrouter/models`.
 - A single active provider is enforced via a unique DB index; activation updates `updated_at`.
 - Shared provider DTOs live in `shared/types/providers.ts`.
