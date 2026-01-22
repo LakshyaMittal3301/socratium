@@ -1,5 +1,7 @@
-import { useState } from "react";
-import type { FormEvent } from "react";
+import { useMemo, useState } from "react";
+import { Bubble, Sender } from "@ant-design/x";
+import { XMarkdown } from "@ant-design/x-markdown";
+import { Alert, Typography } from "antd";
 import type { ChatRequest, ChatResponse } from "@shared/types/api";
 
 type ChatPanelProps = {
@@ -21,9 +23,8 @@ function ChatPanel({ bookId, currentPage, sectionTitle }: ChatPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmed = input.trim();
+  async function handleSubmit(message: string) {
+    const trimmed = message.trim();
     if (!trimmed) return;
 
     setError(null);
@@ -68,43 +69,82 @@ function ChatPanel({ bookId, currentPage, sectionTitle }: ChatPanelProps) {
     }
   }
 
+  const bubbleRoles = useMemo(
+    () => ({
+      user: {
+        placement: "end"
+      },
+      assistant: {
+        placement: "start"
+      }
+    }),
+    []
+  );
+
+  const bubbleItems = useMemo(
+    () =>
+      messages.map((message) => {
+        if (message.role === "assistant") {
+          return {
+            key: message.id,
+            role: message.role,
+            content: (
+              <div className="chat-panel__message">
+                <XMarkdown content={message.content} />
+                {message.contextText && (
+                  <details className="chat-panel__context">
+                    <summary>Page context</summary>
+                    <pre>{message.contextText}</pre>
+                  </details>
+                )}
+              </div>
+            )
+          };
+        }
+        return {
+          key: message.id,
+          role: message.role,
+          content: message.content
+        };
+      }),
+    [messages]
+  );
+
   return (
     <div className="chat-panel">
       <div className="chat-panel__header">
-        <h2>Chat</h2>
-        <p className="muted">
+        <Typography.Title level={5} className="chat-panel__heading">
+          Chat
+        </Typography.Title>
+        <Typography.Text type="secondary" className="chat-panel__meta">
           Page {currentPage} · {sectionTitle ?? "Unknown section"}
-        </p>
+        </Typography.Text>
       </div>
-      <div className="chat-panel__messages">
-        {messages.length === 0 && <p className="muted">Ask a question to start.</p>}
-        {messages.map((message) => (
-          <div key={message.id} className={`chat-message chat-message--${message.role}`}>
-            <p className="chat-message__role">
-              {message.role === "user" ? "You" : "Socratium"}
-            </p>
-            <p className="chat-message__content">{message.content}</p>
-            {message.contextText && (
-              <details className="chat-message__context">
-                <summary>Page context</summary>
-                <pre>{message.contextText}</pre>
-              </details>
-            )}
+      <div className="chat-panel__list">
+        {bubbleItems.length === 0 ? (
+          <div className="chat-panel__empty">
+            <Typography.Text type="secondary">Ask a question to start.</Typography.Text>
           </div>
-        ))}
+        ) : (
+          <Bubble.List
+            className="chat-panel__bubbles"
+            classNames={{ scroll: "chat-panel__scroll" }}
+            items={bubbleItems}
+            role={bubbleRoles}
+            autoScroll
+          />
+        )}
       </div>
-      {error && <p className="error">{error}</p>}
-      <form onSubmit={handleSubmit} className="chat-panel__form">
-        <textarea
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="Ask a question about this page…"
-          rows={3}
-        />
-        <button type="submit" disabled={sending}>
-          {sending ? "Thinking..." : "Send"}
-        </button>
-      </form>
+      {error && <Alert type="error" showIcon message={error} />}
+      <Sender
+        className="chat-panel__sender"
+        value={input}
+        onChange={(value) => setInput(value)}
+        onSubmit={handleSubmit}
+        loading={sending}
+        placeholder="Ask a question about this page…"
+        autoSize={{ minRows: 2, maxRows: 6 }}
+      />
     </div>
   );
 }

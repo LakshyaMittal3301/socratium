@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
+    "@ant-design/x": "^2.1.3",
+    "@ant-design/x-markdown": "^2.1.3",
     "antd": "^6.2.1",
     "pdfjs-dist": "5.4.296",
     "react": "^19.2.0",

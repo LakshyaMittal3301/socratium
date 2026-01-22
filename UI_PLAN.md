@@ -73,3 +73,22 @@
 ## Review Loop
 - After each step: quick UI review, adjust layout/spacing, then proceed.
 - Keep changes small and easy to understand.
+
+## Ant Design X Research (Chat UI)
+Context captured from docs you provided:
+- `@ant-design/x` (UI components): AI-focused UI layer with chat primitives (`Bubble`, `Sender`, `Conversations`, `Prompts`, etc.) built on Ant Design. Useful for quickly building a chat panel with consistent design and fewer custom styles.
+- `@ant-design/x-markdown`: streaming-friendly Markdown renderer with code highlighting, mermaid, formulas; compatible with CommonMark/GFM. Useful for rich assistant responses.
+- `@ant-design/x-sdk`: conversation data flow helpers and model/agent integration; optional for now since we already have backend chat APIs.
+
+Potential fit for Socratium:
+- Likely adopt `@ant-design/x` for the chat UI (message list + input + actions).
+- Use `@ant-design/x-markdown` inside assistant messages to render responses cleanly.
+- Defer `@ant-design/x-sdk` unless we want frontend-managed chat state or streaming support.
+
+Open items:
+- Review the `x-sdk` intro doc (link provided) before deciding on SDK adoption.
+
+Additional notes from `@ant-design/x-sdk` intro:
+- Purpose: data-flow helpers for AI chat (example uses `XRequest` with streaming callbacks).
+- Useful if we move to streaming responses in the frontend.
+- Not required if we continue simple request/response from our backend.
