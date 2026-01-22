@@ -1,8 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Button, Layout, Menu, Space, Typography } from "antd";
+import {
+  BookOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  ReadOutlined,
+  SettingOutlined,
+  SlidersOutlined
+} from "@ant-design/icons";
 import type { BookDto } from "@shared/types/api";
 import LibraryPage from "./pages/LibraryPage";
 import ReaderPage from "./pages/ReaderPage";
+import SettingsPage from "./pages/SettingsPage";
+import ProviderModal from "./components/ProviderModal";
 import "./App.css";
+
+const { Header, Sider, Content } = Layout;
+
+type AppView = "library" | "reader" | "settings";
 
 function App() {
   const debugEnabled = import.meta.env.VITE_DEBUG === "true";
@@ -11,6 +26,9 @@ function App() {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeBookId, setActiveBookId] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<AppView>("library");
+  const [navCollapsed, setNavCollapsed] = useState(false);
+  const [showProviders, setShowProviders] = useState(false);
 
   useEffect(() => {
     void loadBooks();
@@ -21,6 +39,7 @@ function App() {
   useEffect(() => {
     if (activeBookId && !activeBook) {
       setActiveBookId(null);
+      setActiveView("library");
     }
   }, [activeBookId, activeBook]);
 
@@ -72,23 +91,130 @@ function App() {
 
   function handleOpenBook(bookId: string) {
     setActiveBookId(bookId);
+    setActiveView("reader");
   }
 
-  if (activeBook) {
-    return <ReaderPage book={activeBook} onBack={() => setActiveBookId(null)} />;
-  }
+  const menuItems = useMemo(
+    () => [
+      { key: "library", icon: <BookOutlined />, label: "Library" },
+      {
+        key: "reader",
+        icon: <ReadOutlined />,
+        label: "Reader",
+        disabled: !activeBook
+      },
+      { key: "settings", icon: <SettingOutlined />, label: "Settings" }
+    ],
+    [activeBook]
+  );
+
+  const headerTitle =
+    activeView === "reader"
+      ? activeBook?.title ?? "Reader"
+      : activeView === "settings"
+        ? "Settings"
+        : "Library";
+  const headerSubtitle =
+    activeView === "reader"
+      ? "Reading workspace"
+      : activeView === "settings"
+        ? "Preferences and configuration"
+        : "Manage your books";
+
+  const content = (() => {
+    if (activeView === "reader") {
+      if (!activeBook) {
+        return (
+          <div className="page-placeholder">
+            <Typography.Text type="secondary">
+              Pick a book from the library to start reading.
+            </Typography.Text>
+          </div>
+        );
+      }
+      return <ReaderPage book={activeBook} onBack={() => setActiveView("library")} />;
+    }
+    if (activeView === "settings") {
+      return <SettingsPage />;
+    }
+    return (
+      <LibraryPage
+        books={books}
+        uploading={uploading}
+        status={status}
+        error={error}
+        onUpload={handleUpload}
+        onRefresh={loadBooks}
+        onOpenBook={handleOpenBook}
+        debugEnabled={debugEnabled}
+      />
+    );
+  })();
 
   return (
-    <LibraryPage
-      books={books}
-      uploading={uploading}
-      status={status}
-      error={error}
-      onUpload={handleUpload}
-      onRefresh={loadBooks}
-      onOpenBook={handleOpenBook}
-      debugEnabled={debugEnabled}
-    />
+    <Layout className="app-shell">
+      <Sider
+        className="app-sider"
+        collapsed={navCollapsed}
+        collapsible
+        trigger={null}
+        collapsedWidth={72}
+        width={240}
+      >
+        <div className="app-brand">
+          <span className="app-brand__mark">S</span>
+          {!navCollapsed && <span className="app-brand__name">Socratium</span>}
+        </div>
+        <Menu
+          className="app-menu"
+          mode="inline"
+          selectedKeys={[activeView]}
+          items={menuItems}
+          onClick={(event) => {
+            const nextView = event.key as AppView;
+            if (nextView === "reader" && !activeBook) {
+              setActiveView("library");
+              return;
+            }
+            setActiveView(nextView);
+          }}
+        />
+        <div className="app-sider__footer">
+          <Button
+            type="text"
+            icon={navCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setNavCollapsed((prev) => !prev)}
+          >
+            {!navCollapsed && "Collapse"}
+          </Button>
+        </div>
+      </Sider>
+
+      <Layout>
+        <Header className="app-header">
+          <div className="app-header__title">
+            <Typography.Text className="app-header__eyebrow" type="secondary">
+              Socratium
+            </Typography.Text>
+            <Typography.Title level={4}>{headerTitle}</Typography.Title>
+            <Typography.Text type="secondary">{headerSubtitle}</Typography.Text>
+          </div>
+          <Space>
+            <Button
+              type="default"
+              icon={<SlidersOutlined />}
+              onClick={() => setShowProviders(true)}
+            >
+              AI Settings
+            </Button>
+          </Space>
+        </Header>
+        <Content className="app-content">
+          <div className="page-container">{content}</div>
+        </Content>
+      </Layout>
+      <ProviderModal isOpen={showProviders} onClose={() => setShowProviders(false)} />
+    </Layout>
   );
 }
 

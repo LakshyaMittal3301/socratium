@@ -1,8 +1,6 @@
 import type { FormEvent } from "react";
-import { useState } from "react";
 import type { BookDto } from "@shared/types/api";
 import DebugPanel from "../components/DebugPanel";
-import ProviderModal from "../components/ProviderModal";
 
 type LibraryPageProps = {
   books: BookDto[];
@@ -25,15 +23,8 @@ function LibraryPage({
   onOpenBook,
   debugEnabled
 }: LibraryPageProps) {
-  const [showProviders, setShowProviders] = useState(false);
-
   return (
     <div className="library">
-      <header className="app__header">
-        <h1>Socratium</h1>
-        <p className="app__subtitle">Upload a PDF to start reading.</p>
-      </header>
-
       <section className="panel">
         <h2>Upload</h2>
         <form onSubmit={onUpload} className="upload">
@@ -50,9 +41,6 @@ function LibraryPage({
         <div className="panel__header">
           <h2>Books</h2>
           <div className="panel__actions">
-            <button type="button" onClick={() => setShowProviders(true)}>
-              AI Settings
-            </button>
             <button type="button" onClick={onRefresh}>
               Refresh
             </button>
@@ -81,7 +69,6 @@ function LibraryPage({
       </section>
 
       {debugEnabled && <DebugPanel books={books} />}
-      <ProviderModal isOpen={showProviders} onClose={() => setShowProviders(false)} />
     </div>
   );
 }
