@@ -151,6 +151,29 @@ function App() {
     );
   })();
 
+  const headerActions = (
+    <Space>
+      {activeView === "library" && (
+        <>
+          <Button size="large" onClick={loadBooks}>
+            Refresh
+          </Button>
+          <Button type="primary" size="large" onClick={() => setShowUpload(true)}>
+            Add book
+          </Button>
+        </>
+      )}
+      <Button
+        type="default"
+        icon={<SlidersOutlined />}
+        size="large"
+        onClick={() => setShowProviders(true)}
+      >
+        AI Settings
+      </Button>
+    </Space>
+  );
+
   return (
     <Layout className="app-shell">
       <Sider
@@ -182,39 +205,30 @@ function App() {
       </Sider>
 
       <Layout>
-        <Header className="app-header">
-          <div className="app-header__title">
-            <Typography.Text className="app-header__eyebrow" type="secondary">
-              Socratium
-            </Typography.Text>
-            <Typography.Title
-              level={4}
-              ellipsis={isReaderView ? { tooltip: headerTitle } : false}
-            >
-              {headerTitle}
-            </Typography.Title>
-            <Typography.Text type="secondary">{headerSubtitle}</Typography.Text>
-          </div>
-          <Space>
-            {activeView === "library" && (
-              <>
-                <Button size="large" onClick={loadBooks}>
-                  Refresh
-                </Button>
-                <Button type="primary" size="large" onClick={() => setShowUpload(true)}>
-                  Add book
-                </Button>
-              </>
-            )}
-            <Button
-              type="default"
-              icon={<SlidersOutlined />}
-              size="large"
-              onClick={() => setShowProviders(true)}
-            >
-              AI Settings
-            </Button>
-          </Space>
+        <Header className={`app-header${isReaderView ? " app-header--reader" : ""}`}>
+          {isReaderView ? (
+            <>
+              <Typography.Title
+                level={4}
+                className="app-header__compact-title"
+                ellipsis={{ tooltip: headerTitle }}
+              >
+                {headerTitle}
+              </Typography.Title>
+              {headerActions}
+            </>
+          ) : (
+            <>
+              <div className="app-header__title">
+                <Typography.Text className="app-header__eyebrow" type="secondary">
+                  Socratium
+                </Typography.Text>
+                <Typography.Title level={4}>{headerTitle}</Typography.Title>
+                <Typography.Text type="secondary">{headerSubtitle}</Typography.Text>
+              </div>
+              {headerActions}
+            </>
+          )}
         </Header>
         <Content className={`app-content${isReaderView ? " app-content--reader" : ""}`}>
           <div className={`page-container${isReaderView ? " page-container--reader" : ""}`}>

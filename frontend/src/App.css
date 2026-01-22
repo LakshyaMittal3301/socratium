@@ -85,6 +85,11 @@
   line-height: 1.4;
 }
 
+.app-header--reader {
+  padding: 0.75rem 1.5rem;
+  gap: 1rem;
+}
+
 .app-header__title {
   display: grid;
   gap: 0.2rem;
@@ -106,6 +111,12 @@
   max-width: 52vw;
 }
 
+.app-header__compact-title {
+  margin: 0;
+  font-size: 1.1rem;
+  max-width: 60vw;
+}
+
 .app-content {
   padding: 1.5rem 2rem 2.5rem;
   flex: 1;
@@ -115,9 +126,9 @@
 
 .app-content--reader {
   padding: 0.75rem 1rem 1rem;
-  height: 98vh;
-  flex: 0 0 auto;
-  overflow: visible;
+  height: auto;
+  flex: 1;
+  overflow: hidden;
 }
 
 .page-container {
