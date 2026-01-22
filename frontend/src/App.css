@@ -9,12 +9,27 @@
 
 .app-sider {
   border-right: 1px solid var(--border-muted);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  align-self: flex-start;
 }
 
 .app-sider .ant-layout-sider-children {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+.app-sider .ant-layout-sider-trigger {
+  background: transparent;
+  color: #40362c;
+  border-top: 1px solid #e0d3c2;
+}
+
+.app-sider .ant-layout-sider-trigger:hover {
+  background: #f5efe4;
+  color: #40362c;
 }
 
 .app-brand {
@@ -58,16 +73,6 @@
   background: var(--surface-bg);
 }
 
-.app-sider__footer {
-  margin-top: auto;
-  padding: 1rem 0.75rem 1.5rem;
-}
-
-.app-sider__footer .ant-btn {
-  width: 100%;
-  justify-content: flex-start;
-}
-
 .app-header {
   height: auto;
   padding: 1.5rem 2rem 1rem;
@@ -82,6 +87,7 @@
 .app-header__title {
   display: grid;
   gap: 0.2rem;
+  min-width: 0;
 }
 
 .app-header__eyebrow {
@@ -96,6 +102,7 @@
 
 .app-header__title h4.ant-typography {
   font-size: 1.35rem;
+  max-width: 52vw;
 }
 
 .app-content {

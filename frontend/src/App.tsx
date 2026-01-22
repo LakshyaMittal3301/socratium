@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Button, Layout, Menu, Space, Typography } from "antd";
 import {
   BookOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   ReadOutlined,
   SettingOutlined,
   SlidersOutlined
@@ -108,6 +106,7 @@ function App() {
     [activeBook]
   );
 
+  const isReaderView = activeView === "reader";
   const headerTitle =
     activeView === "reader"
       ? activeBook?.title ?? "Reader"
@@ -157,7 +156,7 @@ function App() {
         className="app-sider"
         collapsed={navCollapsed}
         collapsible
-        trigger={null}
+        onCollapse={(value) => setNavCollapsed(value)}
         collapsedWidth={72}
         width={240}
       >
@@ -179,15 +178,6 @@ function App() {
             setActiveView(nextView);
           }}
         />
-        <div className="app-sider__footer">
-          <Button
-            type="text"
-            icon={navCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setNavCollapsed((prev) => !prev)}
-          >
-            {!navCollapsed && "Collapse"}
-          </Button>
-        </div>
       </Sider>
 
       <Layout>
@@ -196,7 +186,12 @@ function App() {
             <Typography.Text className="app-header__eyebrow" type="secondary">
               Socratium
             </Typography.Text>
-            <Typography.Title level={4}>{headerTitle}</Typography.Title>
+            <Typography.Title
+              level={4}
+              ellipsis={isReaderView ? { tooltip: headerTitle } : false}
+            >
+              {headerTitle}
+            </Typography.Title>
             <Typography.Text type="secondary">{headerSubtitle}</Typography.Text>
           </div>
           <Space>
