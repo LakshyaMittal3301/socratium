@@ -23,9 +23,9 @@ createRoot(document.getElementById("root")!).render(
         },
         components: {
           Button: {
-            controlHeight: 42,
-            fontSize: 16,
-            paddingInline: 18
+            controlHeight: 36,
+            fontSize: 14,
+            paddingInline: 14
           },
           Layout: {
             headerBg: "#f6f1e7",

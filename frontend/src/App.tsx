@@ -155,20 +155,13 @@ function App() {
     <Space>
       {activeView === "library" && (
         <>
-          <Button size="large" onClick={loadBooks}>
-            Refresh
-          </Button>
-          <Button type="primary" size="large" onClick={() => setShowUpload(true)}>
+          <Button onClick={loadBooks}>Refresh</Button>
+          <Button type="primary" onClick={() => setShowUpload(true)}>
             Add book
           </Button>
         </>
       )}
-      <Button
-        type="default"
-        icon={<SlidersOutlined />}
-        size="large"
-        onClick={() => setShowProviders(true)}
-      >
+      <Button type="default" icon={<SlidersOutlined />} onClick={() => setShowProviders(true)}>
         AI Settings
       </Button>
     </Space>

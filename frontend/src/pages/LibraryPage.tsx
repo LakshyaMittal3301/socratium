@@ -126,14 +126,14 @@ function LibraryPage({
         onCancel={onCloseUpload}
         onOk={handleUploadConfirm}
         okText="Upload PDF"
-        okButtonProps={{ size: "large" }}
-        cancelButtonProps={{ size: "large" }}
+        okButtonProps={{ size: "middle" }}
+        cancelButtonProps={{ size: "middle" }}
         confirmLoading={uploading}
         title="Add a book"
       >
         <div className="library-upload-modal">
           <Upload {...uploadProps}>
-            <Button size="large">Select PDF</Button>
+            <Button size="middle">Select PDF</Button>
           </Upload>
           {selectedFile && (
             <Typography.Text type="secondary">
