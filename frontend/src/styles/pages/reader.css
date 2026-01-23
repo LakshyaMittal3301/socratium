@@ -73,12 +73,13 @@
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   min-width: 0;
 }
 
 .chat-panel__heading {
   margin: 0;
+  flex-shrink: 0;
 }
 
 .chat-panel__meta {
@@ -86,6 +87,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
 }
 
 .chat-panel__list {
