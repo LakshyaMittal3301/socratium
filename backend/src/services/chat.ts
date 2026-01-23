@@ -99,7 +99,7 @@ export function createChatService(deps: {
         throw badRequest("Invalid page number");
       }
 
-      const sectionTitle = input.sectionTitle?.trim() || null;
+      const sectionTitle = deps.books.getSectionTitle(thread.book_id, pageNumber);
       const messageText = input.message.trim();
       if (!messageText) {
         throw badRequest("Message is required");

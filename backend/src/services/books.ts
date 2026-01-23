@@ -25,6 +25,7 @@ export type BooksService = {
   getPageMap: (bookId: string, limit: number) => PageMapResponse;
   getPageText: (bookId: string, pageNumber: number) => PageTextResponse;
   tryGetPageText: (bookId: string, pageNumber: number) => PageTextResponse | null;
+  getSectionTitle: (bookId: string, pageNumber: number) => string | null;
 };
 
 export function createBooksService(deps: {
@@ -84,6 +85,19 @@ export function createBooksService(deps: {
       } catch {
         return null;
       }
+    },
+    getSectionTitle(bookId: string, pageNumber: number): string | null {
+      const book = requireBook(deps.books, bookId);
+      if (!book.outline_json) {
+        return null;
+      }
+      let outline: OutlineNode[] | null = null;
+      try {
+        outline = JSON.parse(book.outline_json) as OutlineNode[];
+      } catch {
+        return null;
+      }
+      return findSectionTitle(outline ?? [], pageNumber);
     }
   };
 }
@@ -109,4 +123,38 @@ function getPageTextForBook(
     page_number: entry.page_number,
     text: text.slice(entry.start_offset, entry.end_offset)
   };
+}
+
+type OutlineEntry = {
+  title: string;
+  pageNumber: number | null;
+  depth: number;
+};
+
+function findSectionTitle(nodes: OutlineNode[], pageNumber: number): string | null {
+  const entries = flattenOutline(nodes);
+  const candidates = entries.filter(
+    (entry) => entry.pageNumber !== null && entry.pageNumber <= pageNumber
+  );
+  if (candidates.length === 0) {
+    return null;
+  }
+  const nearest = candidates.reduce((best, entry) => {
+    if (!best || (entry.pageNumber ?? 0) > (best.pageNumber ?? 0)) {
+      return entry;
+    }
+    return best;
+  }, candidates[0]);
+  return nearest.title ?? null;
+}
+
+function flattenOutline(nodes: OutlineNode[], depth = 1): OutlineEntry[] {
+  const entries: OutlineEntry[] = [];
+  for (const node of nodes) {
+    entries.push({ title: node.title, pageNumber: node.pageNumber, depth });
+    if (node.children.length) {
+      entries.push(...flattenOutline(node.children, depth + 1));
+    }
+  }
+  return entries;
 }

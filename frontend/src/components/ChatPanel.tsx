@@ -212,7 +212,6 @@ function ChatPanel({ bookId, currentPage, sectionTitle, providerRefreshKey }: Ch
       const response = await sendChat({
         threadId,
         pageNumber: currentPage,
-        sectionTitle,
         message: trimmed
       });
       setMessages((prev) => [...prev, response.message]);

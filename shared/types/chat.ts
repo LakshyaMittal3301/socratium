@@ -41,7 +41,6 @@ export type MessageListResponse = ChatMessageDto[];
 export type ChatSendRequest = {
   threadId: string;
   pageNumber: number;
-  sectionTitle: string | null;
   message: string;
 };
 

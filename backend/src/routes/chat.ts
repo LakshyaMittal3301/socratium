@@ -27,7 +27,6 @@ export function registerChatRoutes(app: FastifyInstance): void {
       return await app.services.chat.reply({
         threadId: body.threadId,
         pageNumber,
-        sectionTitle: body.sectionTitle ?? null,
         message: body.message
       });
     }

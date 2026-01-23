@@ -5,7 +5,6 @@ export const chatRequestSchema = {
   properties: {
     threadId: { type: "string" },
     pageNumber: { type: "number" },
-    sectionTitle: { anyOf: [{ type: "string" }, { type: "null" }] },
     message: { type: "string" }
   },
   required: ["threadId", "pageNumber", "message"]
