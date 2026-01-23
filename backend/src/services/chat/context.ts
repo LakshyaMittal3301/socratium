@@ -5,6 +5,14 @@ export type PageContextEntry = {
   text: string;
 };
 
+export type ReadingContextInput = {
+  bookTitle: string;
+  sectionTitle: string | null;
+  pageNumber: number;
+  excerptStatus: "available" | "missing";
+  contextText: string;
+};
+
 export function collectPageContext(
   books: BooksService,
   bookId: string,
@@ -19,4 +27,19 @@ export function collectPageContext(
     pages.push({ pageNumber: data.page_number, text: data.text });
   }
   return pages;
+}
+
+export function buildReadingContextBlock(input: ReadingContextInput): string {
+  const section = input.sectionTitle ?? "Unknown section";
+  const excerptText = input.contextText.trim() || "(no excerpt text available)";
+  return [
+    "[READING_CONTEXT]",
+    `Book: ${input.bookTitle}`,
+    `Section/Subsection: ${section}`,
+    `Page: ${input.pageNumber}`,
+    `ExcerptStatus: ${input.excerptStatus}`,
+    "",
+    "[BOOK_EXCERPT]",
+    excerptText
+  ].join("\n");
 }

@@ -1,21 +1,21 @@
+import { chatMessageSchema, threadSchema } from "./threads";
+
 export const chatRequestSchema = {
   type: "object",
   properties: {
-    bookId: { type: "string" },
+    threadId: { type: "string" },
     pageNumber: { type: "number" },
     sectionTitle: { anyOf: [{ type: "string" }, { type: "null" }] },
     message: { type: "string" }
   },
-  required: ["bookId", "pageNumber", "message"]
+  required: ["threadId", "pageNumber", "message"]
 };
 
 export const chatResponseSchema = {
   type: "object",
   properties: {
-    reply: { type: "string" },
-    pageNumber: { type: "number" },
-    sectionTitle: { anyOf: [{ type: "string" }, { type: "null" }] },
-    contextText: { type: "string" }
+    message: chatMessageSchema,
+    thread: threadSchema
   },
-  required: ["reply", "pageNumber", "sectionTitle", "contextText"]
+  required: ["message", "thread"]
 };

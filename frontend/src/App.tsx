@@ -27,6 +27,7 @@ function App() {
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [showProviders, setShowProviders] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [providerRefreshKey, setProviderRefreshKey] = useState(0);
 
   useEffect(() => {
     void loadBooks();
@@ -129,7 +130,7 @@ function App() {
           </div>
         );
       }
-      return <ReaderPage book={activeBook} />;
+      return <ReaderPage book={activeBook} providerRefreshKey={providerRefreshKey} />;
     }
     if (activeView === "settings") {
       return <SettingsPage />;
@@ -190,7 +191,11 @@ function App() {
       >
         {content}
       </AppShell>
-      <ProviderModal isOpen={showProviders} onClose={() => setShowProviders(false)} />
+      <ProviderModal
+        isOpen={showProviders}
+        onClose={() => setShowProviders(false)}
+        onProvidersChange={() => setProviderRefreshKey((prev) => prev + 1)}
+      />
     </>
   );
 }

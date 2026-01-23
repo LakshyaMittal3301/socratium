@@ -5,9 +5,10 @@ import ChatPanel from "../components/ChatPanel";
 
 type ReaderPageProps = {
   book: BookDto;
+  providerRefreshKey?: number;
 };
 
-function ReaderPage({ book }: ReaderPageProps) {
+function ReaderPage({ book, providerRefreshKey }: ReaderPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [outline, setOutline] = useState<OutlineNode[] | null>(null);
   const fileUrl = `/api/books/${book.id}/file`;
@@ -51,7 +52,12 @@ function ReaderPage({ book }: ReaderPageProps) {
           <PdfViewer fileUrl={fileUrl} onPageChange={setCurrentPage} />
         </main>
         <aside className="panel reader__panel reader__panel--right">
-          <ChatPanel bookId={book.id} currentPage={currentPage} sectionTitle={sectionTitle} />
+          <ChatPanel
+            bookId={book.id}
+            currentPage={currentPage}
+            sectionTitle={sectionTitle}
+            providerRefreshKey={providerRefreshKey}
+          />
         </aside>
       </div>
     </div>

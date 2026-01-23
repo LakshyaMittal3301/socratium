@@ -32,6 +32,7 @@ export type ProvidersService = {
   setActive: (id: string) => ProviderDto;
   remove: (id: string) => void;
   getActiveRecord: () => ProviderRecord | null;
+  getRecordById: (id: string) => ProviderRecord | null;
   getActiveDto: () => ProviderDto | null;
   testKey: (input: TestProviderInput) => Promise<string>;
   listOpenRouterModels: (apiKey: string) => Promise<OpenRouterModel[]>;
@@ -97,6 +98,9 @@ export function createProvidersService(repos: {
     },
     getActiveRecord(): ProviderRecord | null {
       return repos.providers.getActive();
+    },
+    getRecordById(id: string): ProviderRecord | null {
+      return repos.providers.getById(id);
     },
     getActiveDto(): ProviderDto | null {
       const record = repos.providers.getActive();

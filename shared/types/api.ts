@@ -56,17 +56,3 @@ export type PageTextResponse = {
   page_number: number;
   text: string;
 };
-
-export type ChatRequest = {
-  bookId: string;
-  pageNumber: number;
-  sectionTitle: string | null;
-  message: string;
-};
-
-export type ChatResponse = {
-  reply: string;
-  pageNumber: number;
-  sectionTitle: string | null;
-  contextText: string;
-};

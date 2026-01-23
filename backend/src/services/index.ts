@@ -19,7 +19,12 @@ export function createServices(repos: Repositories): Services {
   const providers = createProvidersService({ providers: repos.providers });
   return {
     books,
-    chat: createChatService({ books, providers }),
+    chat: createChatService({
+      books,
+      providers,
+      threads: repos.threads,
+      messages: repos.messages
+    }),
     providers
   };
 }

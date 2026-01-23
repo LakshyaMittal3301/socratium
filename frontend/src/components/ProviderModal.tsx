@@ -13,9 +13,10 @@ import ProviderList from "./providers/ProviderList";
 type ProviderModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  onProvidersChange?: () => void;
 };
 
-function ProviderModal({ isOpen, onClose }: ProviderModalProps) {
+function ProviderModal({ isOpen, onClose, onProvidersChange }: ProviderModalProps) {
   const [providers, setProviders] = useState<ProviderDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -89,6 +90,7 @@ function ProviderModal({ isOpen, onClose }: ProviderModalProps) {
       setName("");
       setApiKey("");
       await loadProviders();
+      onProvidersChange?.();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to save provider");
     } finally {
@@ -105,6 +107,7 @@ function ProviderModal({ isOpen, onClose }: ProviderModalProps) {
         throw new Error(data?.error?.message || `Failed to activate (${res.status})`);
       }
       await loadProviders();
+      onProvidersChange?.();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to activate provider");
     }
@@ -119,6 +122,7 @@ function ProviderModal({ isOpen, onClose }: ProviderModalProps) {
         throw new Error(data?.error?.message || `Failed to delete (${res.status})`);
       }
       await loadProviders();
+      onProvidersChange?.();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to delete provider");
     }
