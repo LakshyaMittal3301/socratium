@@ -91,7 +91,16 @@ export function createChatService(deps: {
       if (!provider) {
         throw badRequest("Thread provider not found");
       }
-      if (!isProviderType(provider.provider_type)) {
+      const activeProvider = deps.providers.getActiveRecord();
+      if (!activeProvider) {
+        throw badRequest("No active AI provider configured");
+      }
+      if (activeProvider.id !== provider.id) {
+        throw badRequest(
+          "Active provider does not match this thread. Activate the thread's provider or start a new thread."
+        );
+      }
+      if (!isProviderType(activeProvider.provider_type)) {
         throw badRequest("Unsupported provider type");
       }
 
@@ -151,14 +160,14 @@ export function createChatService(deps: {
         messages: recent
       });
 
-      const apiKey = decryptSecret(provider.api_key_encrypted);
-      const handler = CHAT_HANDLERS[provider.provider_type];
+      const apiKey = decryptSecret(activeProvider.api_key_encrypted);
+      const handler = CHAT_HANDLERS[activeProvider.provider_type];
       let reply = "No response generated.";
       try {
-        reply = await handler({ apiKey, model: provider.model, prompt });
+        reply = await handler({ apiKey, model: activeProvider.model, prompt });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Unknown error";
-        throw new Error(`Provider request failed (${provider.provider_type}): ${message}`);
+        throw new Error(`Provider request failed (${activeProvider.provider_type}): ${message}`);
       }
 
       const assistantRecord = deps.messages.insert({

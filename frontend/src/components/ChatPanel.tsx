@@ -37,6 +37,7 @@ function ChatPanel({ bookId, currentPage, sectionTitle, providerRefreshKey }: Ch
   const [loadingThreads, setLoadingThreads] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [hasActiveProvider, setHasActiveProvider] = useState(true);
+  const [activeProviderId, setActiveProviderId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -123,9 +124,12 @@ function ChatPanel({ bookId, currentPage, sectionTitle, providerRefreshKey }: Ch
         throw new Error(`Failed to load providers (${res.status})`);
       }
       const data = (await res.json()) as ProviderDto[];
-      setHasActiveProvider(data.some((provider) => provider.is_active));
+      const activeProvider = data.find((provider) => provider.is_active) ?? null;
+      setHasActiveProvider(Boolean(activeProvider));
+      setActiveProviderId(activeProvider?.id ?? null);
     } catch {
       setHasActiveProvider(false);
+      setActiveProviderId(null);
     }
   }
 
@@ -276,18 +280,23 @@ function ChatPanel({ bookId, currentPage, sectionTitle, providerRefreshKey }: Ch
     [messages]
   );
 
+  const providerMismatch =
+    Boolean(activeThread && activeProviderId) && activeThread?.provider_id !== activeProviderId;
   const showNoProviderWarning = !hasActiveProvider && !activeThreadId;
   const inputDisabled =
     sending ||
     loadingThreads ||
     loadingMessages ||
     (!activeThreadId && !hasActiveProvider) ||
-    threadProviderMissing;
+    threadProviderMissing ||
+    providerMismatch;
   const inputPlaceholder = threadProviderMissing
     ? "This thread's provider is missing. Start a new thread."
-    : !activeThreadId && !hasActiveProvider
-      ? "Activate an AI provider to start chatting."
-      : "Ask a question about this page…";
+    : providerMismatch
+      ? "Activate the provider used by this thread to continue."
+      : !activeThreadId && !hasActiveProvider
+        ? "Activate an AI provider to start chatting."
+        : "Ask a question about this page…";
 
   return (
     <div className="chat-panel">
@@ -355,6 +364,13 @@ function ChatPanel({ bookId, currentPage, sectionTitle, providerRefreshKey }: Ch
           type="warning"
           showIcon
           message="This thread's provider was removed. Start a new thread to continue."
+        />
+      )}
+      {providerMismatch && (
+        <Alert
+          type="warning"
+          showIcon
+          message="Active provider does not match this thread. Activate the thread's provider or start a new thread."
         />
       )}
       {error && <Alert type="error" showIcon message={error} />}
