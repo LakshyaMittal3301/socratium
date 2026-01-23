@@ -1,4 +1,4 @@
-import { chatMessageSchema, threadSchema } from "./threads";
+import { chatMessageSchema, threadUpdateSchema } from "./threads";
 
 export const chatRequestSchema = {
   type: "object",
@@ -14,7 +14,7 @@ export const chatResponseSchema = {
   type: "object",
   properties: {
     message: chatMessageSchema,
-    thread: threadSchema
+    thread_update: { anyOf: [threadUpdateSchema, { type: "null" }] }
   },
-  required: ["message", "thread"]
+  required: ["message", "thread_update"]
 };

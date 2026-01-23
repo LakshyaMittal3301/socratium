@@ -54,3 +54,13 @@ export const chatMessageListSchema = {
   type: "array",
   items: chatMessageSchema
 };
+
+export const threadUpdateSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string" },
+    title: { anyOf: [{ type: "string" }, { type: "null" }] },
+    updated_at: { type: "string" }
+  },
+  required: ["id"]
+};

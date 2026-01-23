@@ -215,7 +215,23 @@ function ChatPanel({ bookId, currentPage, sectionTitle, providerRefreshKey }: Ch
         message: trimmed
       });
       setMessages((prev) => [...prev, response.message]);
-      setThreads((prev) => prev.map((thread) => (thread.id === response.thread.id ? response.thread : thread)));
+      if (response.thread_update) {
+        setThreads((prev) =>
+          prev.map((thread) =>
+            thread.id === response.thread_update?.id
+              ? {
+                  ...thread,
+                  ...(response.thread_update.title !== undefined
+                    ? { title: response.thread_update.title }
+                    : {}),
+                  ...(response.thread_update.updated_at
+                    ? { updated_at: response.thread_update.updated_at }
+                    : {})
+                }
+              : thread
+          )
+        );
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Chat failed");
     } finally {

@@ -12,7 +12,8 @@ import type {
   ChatMessageMeta,
   ChatSendRequest,
   ChatSendResponse,
-  ThreadDto
+  ThreadDto,
+  ThreadUpdate
 } from "@shared/types/chat";
 import type { ProviderType } from "@shared/types/providers";
 import { collectPageContext, buildReadingContextBlock } from "./chat/context";
@@ -106,6 +107,7 @@ export function createChatService(deps: {
       }
 
       const now = nowIso();
+      const originalTitle = thread.title;
       deps.messages.insert({
         id: crypto.randomUUID(),
         thread_id: thread.id,
@@ -173,10 +175,9 @@ export function createChatService(deps: {
         created_at: nowIso()
       });
 
-      const updatedThread = requireThread(deps.threads, thread.id);
       return {
         message: toMessageDto(assistantRecord),
-        thread: toThreadDto(updatedThread)
+        thread_update: buildThreadUpdate(thread.id, now, originalTitle, autoTitle)
       };
     }
   };
@@ -249,4 +250,17 @@ function parseMeta(value: string | null): ChatMessageMeta | null {
   } catch {
     return null;
   }
+}
+
+function buildThreadUpdate(
+  threadId: string,
+  updatedAt: string,
+  originalTitle: string | null,
+  nextTitle: string | null
+): ThreadUpdate {
+  const update: ThreadUpdate = { id: threadId, updated_at: updatedAt };
+  if (nextTitle && nextTitle !== originalTitle) {
+    update.title = nextTitle;
+  }
+  return update;
 }

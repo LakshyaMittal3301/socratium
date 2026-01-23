@@ -38,6 +38,12 @@ export type ChatMessageDto = {
 
 export type MessageListResponse = ChatMessageDto[];
 
+export type ThreadUpdate = {
+  id: string;
+  title?: string | null;
+  updated_at?: string;
+};
+
 export type ChatSendRequest = {
   threadId: string;
   pageNumber: number;
@@ -46,5 +52,5 @@ export type ChatSendRequest = {
 
 export type ChatSendResponse = {
   message: ChatMessageDto;
-  thread: ThreadDto;
+  thread_update: ThreadUpdate | null;
 };
