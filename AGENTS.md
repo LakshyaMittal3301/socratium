@@ -1,70 +1,69 @@
-# AGENTS.md
+# AGENTS.md — Socratium
 
 ## Project
-**Name:** Socratium
+Socratium is a **local-first reading companion** that uses the Socratic method to discuss what you read.
 
-**Description:**  
-Socratium is a local-first reading companion that uses the Socratic method to discuss what you read.
+## Repo map
+- `frontend/` — browser UI
+- `backend/` — localhost API (Fastify + TypeScript)
+Frontend talks to backend over localhost.
 
-The goal is to make reading technical books more active by pausing at logical sections, discussing them with AI, and asking questions that test understanding.
+## Planning docs (source of truth)
+We plan work using templates:
+- `docs/prd/TEMPLATE.md` (PRD: what/why, success criteria, non-goals)
+- `docs/spec/TEMPLATE.md` (Spec: how, checklist, verification)
 
----
+Docs are gated: **DRAFT → human approves → FINAL**.
 
-## Repo structure
-This is a single repo containing both frontend and backend:
+## Workflow (gated, repeatable)
+1) **PRD (DRAFT)**: ask clarifying questions (≤8), draft PRD, then stop for human approval → **PRD (FINAL)**  
+2) **Spec (DRAFT)**: draft spec + small checklist, then stop for human approval → **Spec (FINAL)**  
+3) **Slice loop (repeat per checklist item)**:
+   - Build: implement **one** checklist item only
+   - AI Review: `/review` then summarize (tiny)
+   - AI Fix: fix **only P0/P1** from the summary (local refactors OK if needed for clarity/correctness)
+   - Human Review: human reviews `/diff`
+   - Merge
+4) After all slices: start a new PRD for the next feature.
 
-- `frontend/` — browser-based UI
-- `backend/` — local-only API server
+## Do / Don’t
+**Do**
+- Keep changes small, boring, and easy to understand.
+- Prefer clarity over cleverness; improve code toward simplicity.
+- Stop early if scope expands.
 
-Both are developed and run locally.
+**Don’t**
+- Add new features, abstractions, or refactors beyond the current slice.
+- Add/remove dependencies without asking.
+- Copy existing patterns blindly if they reduce clarity.
 
----
+## Build limits (stop and ask)
+Stop and ask before proceeding if:
+- > ~250 lines changed OR > ~8 files touched
+- Spec/intent is unclear
+- Work requires refactoring unrelated code
+- A “bigger cleanup” is desired → propose as a new checklist item instead
 
-## Backend
-- Node.js
-- Fastify
-- TypeScript
-- Runs only on localhost
+## Review output (must be tiny)
+When summarizing review:
+- Max **5 bullets**
+- Each bullet: **P0/P1/P2**, file (and line if easy), one-line fix
+- No essays, no new features
 
-Responsibilities:
-- Store AI configuration locally
-- Call AI models (API-based or local OpenAI-compatible servers)
-- Handle book text processing and discussion logic
+## Commands & checks
+Use existing project scripts only. Prefer targeted checks.
+Examples (adjust to actual scripts present):
+- Frontend: `cd frontend && npm test` / `npm run lint` / `npm run typecheck`
+- Backend: `cd backend && npm test` / `npm run lint` / `npm run typecheck`
+If no automated checks exist, provide a short manual verification checklist.
 
----
+## Must ask before
+- Installing/removing dependencies
+- Large refactors or moving/renaming many files
+- Breaking API/contract changes
+- Changing build/CI/deploy config
 
-## Frontend
-- Browser-based UI
-- Communicates with backend over localhost
-- Users may enter API keys via the frontend
-- API keys must be stored and used by the backend (not embedded in frontend logic)
-
----
-
-## AI / LLM usage
-- Users bring their own AI provider
-- Support OpenAI-style APIs and OpenAI-compatible local servers
-- Do not hardcode a specific provider
-- Treat the model layer as interchangeable
-
----
-
-## Scope rules (important)
-Do NOT add the following unless explicitly asked:
-- User accounts or authentication
-- Payments or subscriptions
-- Cloud services or hosted backends
-- Telemetry or analytics
-- Heavy frameworks (NestJS, Next.js, etc.)
-
-Keep the MVP small and focused.
-
----
-
-## Development principles
-- Prefer simple, readable and clean solutions
-- Go step by step; make small changes instead of multi-step implementations
-- Make small, incremental changes
-- Avoid over-engineering
-- Follow best practices
-- Write minimal test cases, wherever applicable
+## Security (non-negotiable)
+- API keys are entered in the frontend UI but must be stored/used by the **backend**.
+- Never embed or leak keys in frontend code, logs, errors, or client storage.
+- Treat user content and keys as local-only data.
