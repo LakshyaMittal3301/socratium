@@ -177,6 +177,7 @@ On each user message:
 
 ## UI/UX Behavior (v0)
 - Chat input is disabled when no active provider is selected.
+- Chat input is disabled when the active provider does not match the thread's provider.
 - “Regenerate” is deferred.
 
 ## Implementation Plan (Step-by-step)

@@ -11,7 +11,7 @@
 - Add minimal tests around extraction and provider configuration.
 
 ## Next
-- Finalize chat panel (Ant Design X) and add reader controls.
+- Chat UX polish: thread list UX, context visibility, prompt tuning, and streaming (later).
 
 ## Plan
 ### Phase 1 (Complete): MVP Rewrite
@@ -82,3 +82,7 @@ Core goal: product-grade UX + simpler, more understandable codebase.
 - Reader page rebuilt as a 2-column layout (PDF + chat).
 - Chat panel rebuilt with Ant Design X (`Bubble.List`, `Sender`) and `x-markdown`.
 - AI settings modal rebuilt with provider form + provider list.
+- Added persistent chat threads + messages (SQLite) with new thread/message APIs.
+- Chat now builds prompts from system prompt + reading context + recent messages.
+- Section titles are derived server-side from outline + page number.
+- Chat replies are restricted to the active provider; mismatches block sending.

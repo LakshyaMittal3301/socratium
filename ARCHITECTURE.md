@@ -8,13 +8,14 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - Small, incremental changes; one feature at a time.
 - Prefer simple, readable code over abstractions.
 - Keep docs and the roadmap up to date with actual behavior.
-- Full rewrite planned; no data migration required yet.
+- Full rewrite planned; schema is versioned but not migrated yet.
 - Productization requires readable code with clear ownership and tests.
 
 ## MVP UX (Current)
 - Library: upload PDF, manage AI providers, and open a book.
 - Reader: PDF on the left/center with a chat panel on the right (outline is hidden).
-- Chat uses current page + outline-derived section context with the active provider.
+- Chat supports multiple threads per book with persistent history.
+- Chat uses the current page + outline-derived section context (computed server-side).
 
 ## Product Phase (Phase 2) Goals
 - Product-grade UI and reader experience (Ant Design).
@@ -47,7 +48,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `repositories/index.ts` and `services/index.ts` centralize dependency creation.
 
 ### Shared Types
-- API request/response DTOs live in `shared/types/api.ts` and are imported with `import type`.
+- API request/response DTOs live in `shared/types/api.ts` and `shared/types/chat.ts`, imported with `import type`.
 - Backend `tsconfig.json` sets `rootDir` to the repo root so shared types are included; build output goes to `dist/` at the repo root and backend start path is `dist/backend/src/server.js`.
 
 ### Backend Flow Summary (for new contributors)
@@ -58,7 +59,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `services/extraction.ts` extracts PDF data and returns text/outline/page map payloads.
 - `services/chat/*` contains provider adapters and prompt/context helpers.
 - `repositories/*` run SQL queries and return plain records.
-- Shared API DTOs are imported from `shared/types/api.ts` and `shared/types/providers.ts` using `import type`.
+- Shared API DTOs are imported from `shared/types/api.ts`, `shared/types/chat.ts`, and `shared/types/providers.ts` using `import type`.
 
 ### Storage
 - `backend/data/socratium.db`: SQLite database (rewrite schema).
@@ -67,17 +68,20 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `book.text_path` and `book.outline_json` reserved for extraction output.
 - `page_map` table reserved for per-page text offsets.
 - `ai_provider` table stores provider configs with encrypted API keys.
+- `chat_thread` and `chat_message` store chat threads and messages.
 
 ## Data Flow (Today)
 1. Server start: `initDb()` creates tables for the rewrite schema.
 2. `/api/books/upload` stores a PDF, extracts text/outline, and persists page map + metadata.
 3. `/api/books` returns a list of uploaded books.
-4. `/api/providers` manages AI providers; `/api/chat` uses the active provider.
-5. Chat includes the current page plus the previous two pages of text as context.
+4. `/api/books/:bookId/threads` manages threads per book; `/api/threads/:threadId/messages` loads history.
+5. `/api/chat` sends a message to a thread; the provider must match the active provider.
+6. Chat derives section title server-side from outline + page number and includes the current page plus previous pages as context.
 
 ## Sectioning Strategy (Current)
 - Deferred; using outline + current page for context instead of precomputed sections.
 - Outline is fetched for section detection but not shown in the reader UI.
+- Backend derives section title from outline + page number for chat prompts.
 
 ## API Surface (Current)
 - `GET /api/health`: server health check.
@@ -86,7 +90,12 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - `GET /api/books/:bookId`: metadata with `has_text`/`has_outline`.
 - `GET /api/books/:bookId/file`: stream the original PDF for the reader.
 - `GET /api/books/:bookId/outline`: return outline JSON for section context.
-- `POST /api/chat`: return a chat reply with page context.
+- `GET /api/books/:bookId/threads`: list chat threads for a book.
+- `POST /api/books/:bookId/threads`: create a new thread bound to the active provider.
+- `PATCH /api/threads/:threadId`: rename a thread.
+- `DELETE /api/threads/:threadId`: delete a thread and its messages.
+- `GET /api/threads/:threadId/messages`: list thread messages.
+- `POST /api/chat`: send a message to a thread (threadId + pageNumber + message) and return the assistant reply (+ thread update).
 - `GET /api/providers`: list AI providers.
 - `POST /api/providers`: create a provider.
 - `POST /api/providers/test`: test a provider API key + model.
@@ -106,6 +115,7 @@ Socratium is a local-first reading companion that uses Socratic prompts and retr
 - Provider configuration is managed from a modal accessible via the header.
 - OpenRouter model catalog is fetched via `/api/providers/openrouter/models`.
 - A single active provider is enforced via a unique DB index; activation updates `updated_at`.
+- Chat requests require the active provider to match the thread's provider.
 - Shared provider DTOs live in `shared/types/providers.ts`.
 - Generic OpenAI-compatible providers follow later.
 

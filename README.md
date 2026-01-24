@@ -17,6 +17,7 @@ The backend runs on `http://127.0.0.1:8787`. The React dev server runs on `http:
 ## Status
 The app is in a full rewrite with a new Ant Design layout. Upload → reader → chat is wired.
 Reader is a 2-column layout (PDF + chat). Chat uses Ant Design X with Markdown rendering for assistant replies.
+Chat now persists threads + messages per book (SQLite). Threads are bound to a provider; you can only chat when the active provider matches the thread.
 AI settings live in a global modal accessible from the header. Providers: Gemini and OpenRouter (model list available).
 
 ## Productization (Phase 2)
