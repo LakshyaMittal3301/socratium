@@ -33,7 +33,7 @@
 ## Implementation checklist
 - [ ] Review `react-pdf`/PDF.js docs for text layer, annotation layer, and zoom scaling behavior.
 - [ ] Add zoom state + trackpad pinch handling; apply smooth scaling via `scale` (and reconcile with width).
-- [ ] Enable text layer (and import TextLayer CSS) for selectable, formatted copy.
+- [x] Enable text layer (and import TextLayer CSS) for selectable, formatted copy.
 - [ ] Stabilize rendering on resize/nav toggle; preserve page detection + outline syncing.
 
 ## Verification
@@ -42,4 +42,4 @@
 - Manual: Confirm current page detection and section/outline syncing still update correctly.
 
 ## Progress log (optional)
-- 
+- 2026-01-25: Enabled text layer + CSS and removed canvas scaling to fix selection alignment.
