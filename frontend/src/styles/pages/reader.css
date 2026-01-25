@@ -54,10 +54,6 @@
   box-shadow: 0 12px 22px rgba(20, 15, 10, 0.12);
 }
 
-.pdf-page canvas {
-  max-width: 100%;
-  height: auto !important;
-}
 
 .chat-panel {
   display: flex;
