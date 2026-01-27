@@ -16,6 +16,15 @@ import "./App.css";
 
 type AppView = "library" | "reader" | "settings";
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!target) return false;
+  const element = target instanceof HTMLElement ? target : target instanceof Node ? target.parentElement : null;
+  if (!element) return false;
+  const tagName = element.tagName.toLowerCase();
+  if (tagName === "input" || tagName === "textarea") return true;
+  return element.isContentEditable;
+}
+
 function App() {
   const debugEnabled = import.meta.env.VITE_DEBUG === "true";
   const [books, setBooks] = useState<BookDto[]>([]);
@@ -47,6 +56,21 @@ function App() {
       setShowUpload(false);
     }
   }, [activeView]);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.repeat) return;
+      if (event.altKey || event.shiftKey) return;
+      if (!event.metaKey && !event.ctrlKey) return;
+      if (event.key.toLowerCase() !== "i") return;
+      if (isEditableTarget(event.target)) return;
+      event.preventDefault();
+      setShowProviders((prev) => !prev);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   async function loadBooks() {
     setError(null);
