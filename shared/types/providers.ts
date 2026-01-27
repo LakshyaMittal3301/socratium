@@ -44,5 +44,5 @@ export type OpenRouterModelsRequest = {
 };
 
 export type OpenRouterModelsResponse = {
-  models: OpenRouterModel[];
+  data: OpenRouterModel[];
 };
