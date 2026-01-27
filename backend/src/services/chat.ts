@@ -138,15 +138,6 @@ export function createChatService(deps: {
         } satisfies ChatStrategyInput,
         contextLoader
       );
-      if (!request.trace?.promptPayload) {
-        throw new Error("Prompt payload missing from chat strategy.");
-      }
-
-      const promptPayload = request.trace.promptPayload;
-      const promptText = request.trace.promptText ?? "";
-      const contextText = request.trace.contextText ?? "";
-      const excerptStatus = request.meta?.excerptStatus ?? "missing";
-
       const providerResponse = await callProvider(activeProvider, request);
       const replyText = providerResponse.text;
 
@@ -156,10 +147,8 @@ export function createChatService(deps: {
         pageNumber,
         sectionTitle,
         reply: replyText,
-        contextText,
-        excerptStatus,
-        promptPayload,
-        promptText,
+        meta: request.meta,
+        trace: request.trace,
         providerResponseRaw: providerResponse.raw
       });
 

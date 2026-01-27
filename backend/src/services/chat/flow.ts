@@ -11,6 +11,7 @@ import type { ChatMessageDto, ChatSendResponse, ThreadUpdate } from "@shared/typ
 import type { ProviderType } from "@shared/types/providers";
 import { formatReadingContext, selectContext } from "./context";
 import { buildPromptPayload, buildPromptText, SYSTEM_PROMPT } from "./prompt";
+import type { ChatPromptTrace, ChatRequestMeta } from "./types";
 import type { ChatProviderAdapter, NormalizedChatRequest, NormalizedChatResponse } from "./types";
 import { sendGeminiChat } from "./providers/gemini";
 import { sendOpenRouterChat } from "./providers/openrouter";
@@ -155,10 +156,8 @@ export function persistAssistantMessage(input: {
   pageNumber: number;
   sectionTitle: string | null;
   reply: string;
-  contextText: string;
-  excerptStatus: "available" | "missing";
-  promptPayload: ReturnType<typeof buildPromptPayload>;
-  promptText: string;
+  meta?: ChatRequestMeta;
+  trace?: ChatPromptTrace;
   providerResponseRaw?: unknown;
 }): MessageRecord {
   const {
@@ -167,36 +166,22 @@ export function persistAssistantMessage(input: {
     pageNumber,
     sectionTitle,
     reply,
-    contextText,
-    excerptStatus,
-    promptPayload,
-    promptText,
+    meta,
+    trace,
     providerResponseRaw
   } = input;
-  const promptTrace = {
-    system_prompt: promptPayload.systemPrompt,
-    reading_context: promptPayload.readingContext,
-    messages: promptPayload.messages.map((message) => ({
-      role: message.role,
-      content: message.content
-    })),
-    meta: promptPayload.meta
+  const metaPayload = {
+    meta: meta ?? null,
+    trace: trace ?? null,
+    provider_response: reply,
+    provider_response_raw: providerResponseRaw ?? null
   };
   return deps.messages.insert({
     id: crypto.randomUUID(),
     thread_id: thread.id,
     role: "assistant",
     content: reply,
-    meta_json: safeJsonStringify({
-      page_number: pageNumber,
-      section_name: sectionTitle,
-      context_text: contextText,
-      excerpt_status: excerptStatus,
-      prompt_payload: promptTrace,
-      prompt_text: promptText,
-      provider_response: reply,
-      provider_response_raw: providerResponseRaw ?? null
-    }),
+    meta_json: safeJsonStringify(metaPayload),
     created_at: nowIso()
   });
 }
