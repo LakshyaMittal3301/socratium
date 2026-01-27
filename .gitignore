@@ -22,5 +22,5 @@ backend/data/
 # OS/editor
 .DS_Store
 
-# Local-only assets
-Kleppmann, Martin - Designing data-intensive applications_ the big ideas behind reliable, scalable, and maintainable systems (2018, O'Reilly Media) - libgen.li_unlocked.pdf
+# Docs
+docs
