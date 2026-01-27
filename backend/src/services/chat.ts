@@ -1,6 +1,5 @@
 import crypto from "crypto";
-import { badRequest, notFound } from "../lib/errors";
-import { decryptSecret } from "../lib/secrets";
+import { badRequest } from "../lib/errors";
 import { CHAT_PREVIEW_PAGES, CHAT_RECENT_MESSAGES } from "../lib/config";
 import { nowIso } from "../lib/time";
 import type { BooksService } from "./books";
@@ -12,15 +11,19 @@ import type {
   ChatMessageMeta,
   ChatSendRequest,
   ChatSendResponse,
-  ThreadDto,
-  ThreadUpdate
+  ThreadDto
 } from "@shared/types/chat";
 import type { ProviderType } from "@shared/types/providers";
-import { collectPageContext, buildReadingContextBlock } from "./chat/context";
-import { buildPrompt, SYSTEM_PROMPT } from "./chat/prompt";
-import { sendGeminiChat } from "./chat/providers/gemini";
-import { sendOpenRouterChat } from "./chat/providers/openrouter";
 import { normalizeChatSendInput } from "./chat/validation";
+import {
+  buildChatPrompt,
+  buildChatResponse,
+  callProvider,
+  loadThreadAndProvider,
+  persistAssistantMessage,
+  persistUserMessage,
+  requireThread
+} from "./chat/flow";
 
 const DEFAULT_PREVIEW_PAGES = CHAT_PREVIEW_PAGES;
 const DEFAULT_RECENT_MESSAGES = CHAT_RECENT_MESSAGES;
@@ -44,6 +47,14 @@ export function createChatService(deps: {
 }): ChatService {
   const previewPages = Math.max(1, deps.previewPages ?? DEFAULT_PREVIEW_PAGES);
   const recentMessages = Math.max(1, deps.recentMessages ?? DEFAULT_RECENT_MESSAGES);
+  const replyDeps = {
+    books: deps.books,
+    providers: deps.providers,
+    threads: deps.threads,
+    messages: deps.messages,
+    previewPages,
+    recentMessages
+  };
 
   return {
     listThreads(bookId: string): ThreadDto[] {
@@ -88,137 +99,47 @@ export function createChatService(deps: {
     },
     async reply(input: ChatSendRequest): Promise<ChatSendResponse> {
       const { threadId, pageNumber, message } = normalizeChatSendInput(input);
-      const thread = requireThread(deps.threads, threadId);
-      const provider = deps.providers.getRecordById(thread.provider_id);
-      if (!provider) {
-        throw badRequest("Thread provider not found");
-      }
-      const activeProvider = deps.providers.getActiveRecord();
-      if (!activeProvider) {
-        throw badRequest("No active AI provider configured");
-      }
-      if (activeProvider.id !== provider.id) {
-        throw badRequest(
-          "Active provider does not match this thread. Activate the thread's provider or start a new thread."
-        );
-      }
-      if (!isProviderType(activeProvider.provider_type)) {
-        throw badRequest("Unsupported provider type");
-      }
+      const { thread, activeProvider } = loadThreadAndProvider(replyDeps, threadId);
 
       const sectionTitle = deps.books.getSectionTitle(thread.book_id, pageNumber);
-      const messageText = message;
-
-      const now = nowIso();
-      const originalTitle = thread.title;
-      deps.messages.insert({
-        id: crypto.randomUUID(),
-        thread_id: thread.id,
-        role: "user",
-        content: messageText,
-        meta_json: JSON.stringify({
-          page_number: pageNumber,
-          section_name: sectionTitle
-        }),
-        created_at: now
-      });
-
-      const autoTitle = deriveThreadTitle(thread.title, messageText);
-      if (autoTitle) {
-        deps.threads.updateTitle(thread.id, autoTitle, now);
-      } else {
-        deps.threads.touchUpdatedAt(thread.id, now);
-      }
-
-      const bookMeta = deps.books.getMeta(thread.book_id);
-      const pages = collectPageContext(deps.books, thread.book_id, pageNumber, previewPages);
-      const contextText = pages.map((page) => `Page ${page.pageNumber}:\n${page.text}`).join("\n\n");
-      const excerptStatus = contextText.trim() ? "available" : "missing";
-
-      const readingContext = buildReadingContextBlock({
-        bookTitle: bookMeta.title,
-        sectionTitle,
+      const { now, originalTitle, autoTitle } = persistUserMessage({
+        deps: replyDeps,
+        thread,
         pageNumber,
-        excerptStatus,
-        contextText
+        sectionTitle,
+        messageText: message
       });
 
-      const recent = deps.messages
-        .listRecentByThread(thread.id, recentMessages)
-        .reverse()
-        .map(toMessageDto);
-
-      const prompt = buildPrompt({
-        systemPrompt: SYSTEM_PROMPT,
-        readingContext,
-        messages: recent
+      const { prompt, contextText, excerptStatus } = buildChatPrompt({
+        deps: replyDeps,
+        thread,
+        pageNumber,
+        sectionTitle,
+        toMessageDto
       });
 
-      const apiKey = decryptSecret(activeProvider.api_key_encrypted);
-      const handler = CHAT_HANDLERS[activeProvider.provider_type];
-      let reply = "No response generated.";
-      try {
-        reply = await handler({ apiKey, model: activeProvider.model, prompt });
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Unknown error";
-        throw new Error(`Provider request failed (${activeProvider.provider_type}): ${message}`);
-      }
+      const replyText = await callProvider(activeProvider, prompt);
 
-      const assistantRecord = deps.messages.insert({
-        id: crypto.randomUUID(),
-        thread_id: thread.id,
-        role: "assistant",
-        content: reply,
-        meta_json: JSON.stringify({
-          page_number: pageNumber,
-          section_name: sectionTitle,
-          context_text: contextText,
-          excerpt_status: excerptStatus
-        }),
-        created_at: nowIso()
+      const assistantRecord = persistAssistantMessage({
+        deps: replyDeps,
+        thread,
+        pageNumber,
+        sectionTitle,
+        reply: replyText,
+        contextText,
+        excerptStatus
       });
 
-      return {
-        message: toMessageDto(assistantRecord),
-        thread_update: buildThreadUpdate(thread.id, now, originalTitle, autoTitle)
-      };
+      return buildChatResponse({
+        assistantRecord,
+        threadId: thread.id,
+        updatedAt: now,
+        originalTitle,
+        autoTitle,
+        toMessageDto
+      });
     }
   };
-}
-
-const CHAT_HANDLERS: Record<
-  ProviderType,
-  (input: { apiKey: string; model: string; prompt: string }) => Promise<string>
-> = {
-  gemini: sendGeminiChat,
-  openrouter: sendOpenRouterChat
-};
-
-function isProviderType(value: string): value is ProviderType {
-  return value === "gemini" || value === "openrouter";
-}
-
-function requireThread(threads: ThreadsRepository, threadId: string): ThreadRecord {
-  const thread = threads.getById(threadId);
-  if (!thread) {
-    throw notFound("Thread not found");
-  }
-  return thread;
-}
-
-function deriveThreadTitle(currentTitle: string | null, message: string): string | null {
-  if (currentTitle && currentTitle.trim()) {
-    return null;
-  }
-  const normalized = message.replace(/\s+/g, " ").trim();
-  if (!normalized) {
-    return null;
-  }
-  const sentence = normalized.split(/[.!?]/)[0]?.trim();
-  const base = sentence && sentence.length > 0 ? sentence : normalized;
-  const words = base.split(" ").filter(Boolean);
-  const snippet = words.slice(0, 10).join(" ");
-  return snippet.length < base.length ? `${snippet}...` : snippet;
 }
 
 function toThreadDto(record: ThreadRecord): ThreadDto {
@@ -253,17 +174,4 @@ function parseMeta(value: string | null): ChatMessageMeta | null {
   } catch {
     return null;
   }
-}
-
-function buildThreadUpdate(
-  threadId: string,
-  updatedAt: string,
-  originalTitle: string | null,
-  nextTitle: string | null
-): ThreadUpdate {
-  const update: ThreadUpdate = { id: threadId, updated_at: updatedAt };
-  if (nextTitle && nextTitle !== originalTitle) {
-    update.title = nextTitle;
-  }
-  return update;
 }
