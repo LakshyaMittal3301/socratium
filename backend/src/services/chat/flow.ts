@@ -9,7 +9,7 @@ import type { MessagesRepository, MessageRecord } from "../../repositories/messa
 import type { ProviderRecord } from "../../repositories/providers";
 import type { ChatMessageDto, ChatSendResponse, ThreadUpdate } from "@shared/types/chat";
 import type { ProviderType } from "@shared/types/providers";
-import { collectPageContext, buildReadingContextBlock } from "./context";
+import { formatReadingContext, selectContext } from "./context";
 import { buildPrompt, SYSTEM_PROMPT } from "./prompt";
 import { sendGeminiChat } from "./providers/gemini";
 import { sendOpenRouterChat } from "./providers/openrouter";
@@ -93,16 +93,17 @@ export function buildChatPrompt(input: {
 }): { prompt: string; contextText: string; excerptStatus: "available" | "missing" } {
   const { deps, thread, pageNumber, sectionTitle, toMessageDto } = input;
   const bookMeta = deps.books.getMeta(thread.book_id);
-  const pages = collectPageContext(deps.books, thread.book_id, pageNumber, deps.previewPages);
-  const contextText = pages.map((page) => `Page ${page.pageNumber}:\n${page.text}`).join("\n\n");
-  const excerptStatus = contextText.trim() ? "available" : "missing";
-
-  const readingContext = buildReadingContextBlock({
+  const pages = selectContext({
+    books: deps.books,
+    bookId: thread.book_id,
+    pageNumber,
+    previewPages: deps.previewPages
+  });
+  const { contextText, excerptStatus, readingContext } = formatReadingContext({
     bookTitle: bookMeta.title,
     sectionTitle,
     pageNumber,
-    excerptStatus,
-    contextText
+    pages
   });
 
   const recent = deps.messages
