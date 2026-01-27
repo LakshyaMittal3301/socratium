@@ -1,11 +1,7 @@
 import crypto from "crypto";
 import { nowIso } from "../lib/time";
 import { encryptSecret } from "../lib/secrets";
-import {
-  OPENROUTER_BASE_URL,
-  getOpenRouterRequestHeaders,
-  normalizeOpenRouterModels
-} from "../lib/openrouter";
+import { OPENROUTER_BASE_URL, createOpenRouterClient } from "../lib/openrouter";
 import { badRequest, notFound } from "../lib/errors";
 import type { ProviderInsert, ProvidersRepository, ProviderRecord } from "../repositories/providers";
 import type { OpenRouterModel, ProviderDto, ProviderType } from "@shared/types/providers";
@@ -116,16 +112,17 @@ export function createProvidersService(repos: {
     async listOpenRouterModels(apiKey: string): Promise<OpenRouterModel[]> {
       const resolvedKey = requireNonEmpty(apiKey, "API key");
 
-      const response = await fetch(`${OPENROUTER_BASE_URL}/models`, {
-        method: "GET",
-        headers: getOpenRouterRequestHeaders(resolvedKey)
-      });
-      if (!response.ok) {
-        throw badRequest(`OpenRouter request failed (${response.status})`);
+      try {
+        const client = await createOpenRouterClient(resolvedKey);
+        const response = await client.models.list();
+        return response.data.map((model) => ({
+          id: model.id,
+          name: model.name,
+          ...(model.contextLength == null ? {} : { context_length: model.contextLength })
+        }));
+      } catch {
+        throw badRequest("OpenRouter request failed");
       }
-
-      const payload = (await response.json()) as unknown;
-      return normalizeOpenRouterModels(payload);
     }
   };
 }

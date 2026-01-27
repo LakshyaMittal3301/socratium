@@ -94,7 +94,7 @@ export function registerProviderRoutes(app: FastifyInstance): void {
     async (request): Promise<OpenRouterModelsResponse> => {
       const body = request.body as OpenRouterModelsRequest;
       const models = await app.services.providers.listOpenRouterModels(body.apiKey);
-      return { models };
+      return { data: models };
     }
   );
 
