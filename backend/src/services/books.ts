@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { notFound } from "../lib/errors";
-import { createPdfReadStream, readBookText, savePdfStream } from "../lib/storage";
+import { createPdfReadStream, readBookText, removeBookFiles, savePdfStream } from "../lib/storage";
 import type { BooksRepository, BookRecord } from "../repositories/books";
 import type { PageMapRepository } from "../repositories/page-map";
 import type { UploadInput, UploadResult } from "../types/books";
@@ -26,6 +26,7 @@ export type BooksService = {
   getPageText: (bookId: string, pageNumber: number) => PageTextResponse;
   tryGetPageText: (bookId: string, pageNumber: number) => PageTextResponse | null;
   getSectionTitle: (bookId: string, pageNumber: number) => string | null;
+  deleteBook: (bookId: string) => void;
 };
 
 export function createBooksService(deps: {
@@ -98,6 +99,11 @@ export function createBooksService(deps: {
         return null;
       }
       return findSectionTitle(outline ?? [], pageNumber);
+    },
+    deleteBook(bookId: string): void {
+      const book = requireBook(deps.books, bookId);
+      deps.books.remove(bookId);
+      removeBookFiles(book.pdf_path, book.text_path);
     }
   };
 }

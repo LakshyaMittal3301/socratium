@@ -3,6 +3,7 @@ import { badRequest } from "../lib/errors";
 import {
   bookMetaSchema,
   bookSchema,
+  deleteBookResponseSchema,
   outlineResponseSchema,
   uploadResponseSchema
 } from "../schemas/books";
@@ -74,6 +75,24 @@ export function registerBookRoutes(app: FastifyInstance): void {
     async (request): Promise<BookOutlineResponse> => {
       const { bookId } = request.params as { bookId: string };
       return app.services.books.getOutline(bookId);
+    }
+  );
+
+  app.delete(
+    "/api/books/:bookId",
+    {
+      schema: {
+        response: {
+          200: deleteBookResponseSchema,
+          404: errorResponseSchema,
+          500: errorResponseSchema
+        }
+      }
+    },
+    async (request) => {
+      const { bookId } = request.params as { bookId: string };
+      app.services.books.deleteBook(bookId);
+      return { ok: true };
     }
   );
 

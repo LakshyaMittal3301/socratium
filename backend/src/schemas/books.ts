@@ -18,6 +18,14 @@ export const uploadResponseSchema = {
   required: ["id"]
 };
 
+export const deleteBookResponseSchema = {
+  type: "object",
+  properties: {
+    ok: { type: "boolean" }
+  },
+  required: ["ok"]
+};
+
 export const bookMetaSchema = {
   type: "object",
   properties: {

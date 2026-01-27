@@ -17,6 +17,7 @@ export type BooksRepository = {
   list: () => BookRecord[];
   getById: (bookId: string) => BookRow | null;
   updateExtraction: (bookId: string, textPath: string, outlineJson: string | null) => void;
+  remove: (bookId: string) => void;
 };
 
 const BOOK_SELECT_FIELDS = "id, title, source_filename, pdf_path, created_at";
@@ -57,6 +58,9 @@ export function createBooksRepository(db: import("better-sqlite3").Database): Bo
         outlineJson,
         bookId
       );
+    },
+    remove(bookId: string): void {
+      db.prepare("DELETE FROM book WHERE id = ?").run(bookId);
     }
   };
 }

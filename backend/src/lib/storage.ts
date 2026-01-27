@@ -33,3 +33,20 @@ export function readBookText(textPath: string): string {
 export function createPdfReadStream(pdfPath: string): fs.ReadStream {
   return fs.createReadStream(pdfPath);
 }
+
+export function removeBookFiles(pdfPath: string, textPath: string | null): void {
+  removeFileIfExists(pdfPath);
+  if (textPath) {
+    removeFileIfExists(textPath);
+  }
+}
+
+function removeFileIfExists(filePath: string): void {
+  try {
+    fs.unlinkSync(filePath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      console.warn(`Failed to remove file at ${filePath}`);
+    }
+  }
+}
