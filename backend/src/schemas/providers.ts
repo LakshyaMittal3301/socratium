@@ -79,10 +79,10 @@ export const openRouterModelSchema = {
 export const openRouterModelsResponseSchema = {
   type: "object",
   properties: {
-    models: {
+    data: {
       type: "array",
       items: openRouterModelSchema
     }
   },
-  required: ["models"]
+  required: ["data"]
 };
