@@ -20,6 +20,7 @@ import { collectPageContext, buildReadingContextBlock } from "./chat/context";
 import { buildPrompt, SYSTEM_PROMPT } from "./chat/prompt";
 import { sendGeminiChat } from "./chat/providers/gemini";
 import { sendOpenRouterChat } from "./chat/providers/openrouter";
+import { normalizeChatSendInput } from "./chat/validation";
 
 const DEFAULT_PREVIEW_PAGES = CHAT_PREVIEW_PAGES;
 const DEFAULT_RECENT_MESSAGES = CHAT_RECENT_MESSAGES;
@@ -86,7 +87,8 @@ export function createChatService(deps: {
       return deps.messages.listByThread(threadId).map(toMessageDto);
     },
     async reply(input: ChatSendRequest): Promise<ChatSendResponse> {
-      const thread = requireThread(deps.threads, input.threadId);
+      const { threadId, pageNumber, message } = normalizeChatSendInput(input);
+      const thread = requireThread(deps.threads, threadId);
       const provider = deps.providers.getRecordById(thread.provider_id);
       if (!provider) {
         throw badRequest("Thread provider not found");
@@ -104,16 +106,8 @@ export function createChatService(deps: {
         throw badRequest("Unsupported provider type");
       }
 
-      const pageNumber = Number(input.pageNumber);
-      if (!Number.isInteger(pageNumber) || pageNumber <= 0) {
-        throw badRequest("Invalid page number");
-      }
-
       const sectionTitle = deps.books.getSectionTitle(thread.book_id, pageNumber);
-      const messageText = input.message.trim();
-      if (!messageText) {
-        throw badRequest("Message is required");
-      }
+      const messageText = message;
 
       const now = nowIso();
       const originalTitle = thread.title;

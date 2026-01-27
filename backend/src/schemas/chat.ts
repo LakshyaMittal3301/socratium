@@ -3,9 +3,9 @@ import { chatMessageSchema, threadUpdateSchema } from "./threads";
 export const chatRequestSchema = {
   type: "object",
   properties: {
-    threadId: { type: "string" },
-    pageNumber: { type: "number" },
-    message: { type: "string" }
+    threadId: { type: "string", minLength: 1 },
+    pageNumber: { type: "integer", minimum: 1 },
+    message: { type: "string", minLength: 1, pattern: "\\S" }
   },
   required: ["threadId", "pageNumber", "message"]
 };
