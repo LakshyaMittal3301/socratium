@@ -20,20 +20,12 @@ export type UpdateThreadRequest = {
   title: string;
 };
 
-export type ChatMessageMeta = {
-  page_number?: number;
-  section_name?: string | null;
-  context_text?: string;
-  excerpt_status?: "available" | "missing";
-};
-
 export type ChatMessageDto = {
   id: string;
   thread_id: string;
   role: "user" | "assistant";
   content: string;
   created_at: string;
-  meta: ChatMessageMeta | null;
 };
 
 export type MessageListResponse = ChatMessageDto[];

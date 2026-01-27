@@ -8,7 +8,6 @@ import type { ThreadsRepository, ThreadRecord } from "../repositories/threads";
 import type { MessagesRepository, MessageRecord } from "../repositories/messages";
 import type {
   ChatMessageDto,
-  ChatMessageMeta,
   ChatSendRequest,
   ChatSendResponse,
   ThreadDto
@@ -196,16 +195,6 @@ function toMessageDto(record: MessageRecord): ChatMessageDto {
     thread_id: record.thread_id,
     role: record.role === "assistant" ? "assistant" : "user",
     content: record.content,
-    created_at: record.created_at,
-    meta: parseMeta(record.meta_json)
+    created_at: record.created_at
   };
-}
-
-function parseMeta(value: string | null): ChatMessageMeta | null {
-  if (!value) return null;
-  try {
-    return JSON.parse(value) as ChatMessageMeta;
-  } catch {
-    return null;
-  }
 }

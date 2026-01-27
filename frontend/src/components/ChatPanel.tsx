@@ -261,12 +261,6 @@ function ChatPanel({ bookId, currentPage, sectionTitle, providerRefreshKey }: Ch
             content: (
               <div className="chat-panel__message">
                 <XMarkdown content={message.content} />
-                {message.meta?.context_text && (
-                  <details className="chat-panel__context">
-                    <summary>Page context</summary>
-                    <pre>{message.meta.context_text}</pre>
-                  </details>
-                )}
               </div>
             )
           };

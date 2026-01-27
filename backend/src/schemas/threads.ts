@@ -27,16 +27,6 @@ export const updateThreadSchema = {
   required: ["title"]
 };
 
-export const chatMessageMetaSchema = {
-  type: "object",
-  properties: {
-    page_number: { type: "number" },
-    section_name: { anyOf: [{ type: "string" }, { type: "null" }] },
-    context_text: { type: "string" },
-    excerpt_status: { type: "string", enum: ["available", "missing"] }
-  }
-};
-
 export const chatMessageSchema = {
   type: "object",
   properties: {
@@ -44,10 +34,9 @@ export const chatMessageSchema = {
     thread_id: { type: "string" },
     role: { type: "string" },
     content: { type: "string" },
-    created_at: { type: "string" },
-    meta: { anyOf: [chatMessageMetaSchema, { type: "null" }] }
+    created_at: { type: "string" }
   },
-  required: ["id", "thread_id", "role", "content", "created_at", "meta"]
+  required: ["id", "thread_id", "role", "content", "created_at"]
 };
 
 export const chatMessageListSchema = {
