@@ -16,7 +16,11 @@ import type {
 import type { ProviderType } from "@shared/types/providers";
 import { normalizeChatSendInput } from "./chat/validation";
 import {
-  buildChatPrompt,
+  createDefaultChatStrategy,
+  type ChatStrategyInput
+} from "./chat/strategy";
+import { createChatContextLoader } from "./chat/context-loader";
+import {
   buildChatResponse,
   callProvider,
   loadThreadAndProvider,
@@ -44,9 +48,11 @@ export function createChatService(deps: {
   messages: MessagesRepository;
   previewPages?: number;
   recentMessages?: number;
+  strategy?: ReturnType<typeof createDefaultChatStrategy>;
 }): ChatService {
   const previewPages = Math.max(1, deps.previewPages ?? DEFAULT_PREVIEW_PAGES);
   const recentMessages = Math.max(1, deps.recentMessages ?? DEFAULT_RECENT_MESSAGES);
+  const strategy = deps.strategy ?? createDefaultChatStrategy();
   const replyDeps = {
     books: deps.books,
     providers: deps.providers,
@@ -55,6 +61,11 @@ export function createChatService(deps: {
     previewPages,
     recentMessages
   };
+  const contextLoader = createChatContextLoader({
+    books: deps.books,
+    messages: deps.messages,
+    toMessageDto
+  });
 
   return {
     listThreads(bookId: string): ThreadDto[] {
@@ -110,13 +121,32 @@ export function createChatService(deps: {
         messageText: message
       });
 
-      const { promptPayload, promptText, contextText, excerptStatus } = buildChatPrompt({
-        deps: replyDeps,
-        thread,
-        pageNumber,
-        sectionTitle,
-        toMessageDto
-      });
+      const request = await strategy.buildRequest(
+        {
+          threadId: thread.id,
+          bookId: thread.book_id,
+          pageNumber,
+          sectionTitle,
+          messageText: message,
+          previewPages,
+          recentMessages,
+          provider: {
+            id: activeProvider.id,
+            type: activeProvider.provider_type as ProviderType,
+            model: activeProvider.model,
+            name: activeProvider.name
+          }
+        } satisfies ChatStrategyInput,
+        contextLoader
+      );
+      if (!request.trace?.promptPayload) {
+        throw new Error("Prompt payload missing from chat strategy.");
+      }
+
+      const promptPayload = request.trace.promptPayload;
+      const promptText = request.trace.promptText ?? "";
+      const contextText = request.trace.contextText ?? "";
+      const excerptStatus = request.meta?.excerptStatus ?? "missing";
 
       const replyText = await callProvider(activeProvider, promptPayload);
 

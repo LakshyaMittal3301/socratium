@@ -2,6 +2,7 @@ import type { Repositories } from "../repositories";
 import { createBooksService } from "./books";
 import { createExtractionService } from "./extraction";
 import { createChatService } from "./chat";
+import { createDefaultChatStrategy } from "./chat/strategy";
 import { createProvidersService } from "./providers";
 import type { BooksService } from "./books";
 import type { ChatService } from "./chat";
@@ -23,7 +24,8 @@ export function createServices(repos: Repositories): Services {
       books,
       providers,
       threads: repos.threads,
-      messages: repos.messages
+      messages: repos.messages,
+      strategy: createDefaultChatStrategy()
     }),
     providers
   };
