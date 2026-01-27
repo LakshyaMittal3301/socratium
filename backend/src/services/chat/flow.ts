@@ -131,14 +131,17 @@ export function buildChatPrompt(input: {
   return { promptPayload, promptText, contextText, excerptStatus };
 }
 
-export async function callProvider(activeProvider: ProviderRecord, prompt: string): Promise<string> {
+export async function callProvider(
+  activeProvider: ProviderRecord,
+  promptPayload: ReturnType<typeof buildPromptPayload>
+): Promise<string> {
   if (!isProviderType(activeProvider.provider_type)) {
     throw badRequest("Unsupported provider type");
   }
   const apiKey = decryptSecret(activeProvider.api_key_encrypted);
   const handler = CHAT_HANDLERS[activeProvider.provider_type];
   try {
-    return await handler({ apiKey, model: activeProvider.model, prompt });
+    return await handler({ apiKey, model: activeProvider.model, payload: promptPayload });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     throw new Error(`Provider request failed (${activeProvider.provider_type}): ${message}`);
@@ -153,8 +156,29 @@ export function persistAssistantMessage(input: {
   reply: string;
   contextText: string;
   excerptStatus: "available" | "missing";
+  promptPayload: ReturnType<typeof buildPromptPayload>;
+  promptText: string;
 }): MessageRecord {
-  const { deps, thread, pageNumber, sectionTitle, reply, contextText, excerptStatus } = input;
+  const {
+    deps,
+    thread,
+    pageNumber,
+    sectionTitle,
+    reply,
+    contextText,
+    excerptStatus,
+    promptPayload,
+    promptText
+  } = input;
+  const promptTrace = {
+    system_prompt: promptPayload.systemPrompt,
+    reading_context: promptPayload.readingContext,
+    messages: promptPayload.messages.map((message) => ({
+      role: message.role,
+      content: message.content
+    })),
+    meta: promptPayload.meta
+  };
   return deps.messages.insert({
     id: crypto.randomUUID(),
     thread_id: thread.id,
@@ -164,7 +188,10 @@ export function persistAssistantMessage(input: {
       page_number: pageNumber,
       section_name: sectionTitle,
       context_text: contextText,
-      excerpt_status: excerptStatus
+      excerpt_status: excerptStatus,
+      prompt_payload: promptTrace,
+      prompt_text: promptText,
+      provider_response: reply
     }),
     created_at: nowIso()
   });
@@ -187,7 +214,11 @@ export function buildChatResponse(input: {
 
 const CHAT_HANDLERS: Record<
   ProviderType,
-  (input: { apiKey: string; model: string; prompt: string }) => Promise<string>
+  (input: {
+    apiKey: string;
+    model: string;
+    payload: ReturnType<typeof buildPromptPayload>;
+  }) => Promise<string>
 > = {
   gemini: sendGeminiChat,
   openrouter: sendOpenRouterChat
