@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import path from "path";
 import { getDataDir } from "../lib/paths";
 
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 7;
 const dbPath = path.join(getDataDir(), "socratium.db");
 export const db = new Database(dbPath);
 
@@ -33,7 +33,7 @@ export function initDb(): void {
       page_number INTEGER NOT NULL,
       start_offset INTEGER NOT NULL,
       end_offset INTEGER NOT NULL,
-      FOREIGN KEY(book_id) REFERENCES book(id)
+      FOREIGN KEY(book_id) REFERENCES book(id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS ai_provider (
