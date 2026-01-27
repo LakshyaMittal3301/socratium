@@ -52,6 +52,16 @@ export type NormalizedChatResponse = {
   raw?: unknown;
 };
 
+export type ChatProviderAdapterInput = {
+  apiKey: string;
+  model: string;
+  request: NormalizedChatRequest;
+};
+
+export type ChatProviderAdapter = (
+  input: ChatProviderAdapterInput
+) => Promise<NormalizedChatResponse>;
+
 export type ChatStrategyInput = {
   threadId: string;
   bookId: string;

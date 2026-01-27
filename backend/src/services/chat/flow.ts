@@ -11,6 +11,7 @@ import type { ChatMessageDto, ChatSendResponse, ThreadUpdate } from "@shared/typ
 import type { ProviderType } from "@shared/types/providers";
 import { formatReadingContext, selectContext } from "./context";
 import { buildPromptPayload, buildPromptText, SYSTEM_PROMPT } from "./prompt";
+import type { ChatProviderAdapter, NormalizedChatRequest, NormalizedChatResponse } from "./types";
 import { sendGeminiChat } from "./providers/gemini";
 import { sendOpenRouterChat } from "./providers/openrouter";
 
@@ -133,15 +134,15 @@ export function buildChatPrompt(input: {
 
 export async function callProvider(
   activeProvider: ProviderRecord,
-  promptPayload: ReturnType<typeof buildPromptPayload>
-): Promise<string> {
+  request: NormalizedChatRequest
+): Promise<NormalizedChatResponse> {
   if (!isProviderType(activeProvider.provider_type)) {
     throw badRequest("Unsupported provider type");
   }
   const apiKey = decryptSecret(activeProvider.api_key_encrypted);
   const handler = CHAT_HANDLERS[activeProvider.provider_type];
   try {
-    return await handler({ apiKey, model: activeProvider.model, payload: promptPayload });
+    return await handler({ apiKey, model: activeProvider.model, request });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     throw new Error(`Provider request failed (${activeProvider.provider_type}): ${message}`);
@@ -158,6 +159,7 @@ export function persistAssistantMessage(input: {
   excerptStatus: "available" | "missing";
   promptPayload: ReturnType<typeof buildPromptPayload>;
   promptText: string;
+  providerResponseRaw?: unknown;
 }): MessageRecord {
   const {
     deps,
@@ -168,7 +170,8 @@ export function persistAssistantMessage(input: {
     contextText,
     excerptStatus,
     promptPayload,
-    promptText
+    promptText,
+    providerResponseRaw
   } = input;
   const promptTrace = {
     system_prompt: promptPayload.systemPrompt,
@@ -184,14 +187,15 @@ export function persistAssistantMessage(input: {
     thread_id: thread.id,
     role: "assistant",
     content: reply,
-    meta_json: JSON.stringify({
+    meta_json: safeJsonStringify({
       page_number: pageNumber,
       section_name: sectionTitle,
       context_text: contextText,
       excerpt_status: excerptStatus,
       prompt_payload: promptTrace,
       prompt_text: promptText,
-      provider_response: reply
+      provider_response: reply,
+      provider_response_raw: providerResponseRaw ?? null
     }),
     created_at: nowIso()
   });
@@ -212,14 +216,7 @@ export function buildChatResponse(input: {
   };
 }
 
-const CHAT_HANDLERS: Record<
-  ProviderType,
-  (input: {
-    apiKey: string;
-    model: string;
-    payload: ReturnType<typeof buildPromptPayload>;
-  }) => Promise<string>
-> = {
+const CHAT_HANDLERS: Record<ProviderType, ChatProviderAdapter> = {
   gemini: sendGeminiChat,
   openrouter: sendOpenRouterChat
 };
@@ -241,6 +238,18 @@ function deriveThreadTitle(currentTitle: string | null, message: string): string
   const words = base.split(" ").filter(Boolean);
   const snippet = words.slice(0, 10).join(" ");
   return snippet.length < base.length ? `${snippet}...` : snippet;
+}
+
+function safeJsonStringify(value: unknown): string {
+  const seen = new WeakSet<object>();
+  return JSON.stringify(value, (_key, current) => {
+    if (typeof current === "object" && current !== null) {
+      if (seen.has(current)) return "[Circular]";
+      seen.add(current);
+    }
+    if (typeof current === "bigint") return current.toString();
+    return current;
+  });
 }
 
 function buildThreadUpdate(

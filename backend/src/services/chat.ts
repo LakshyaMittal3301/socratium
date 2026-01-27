@@ -148,7 +148,8 @@ export function createChatService(deps: {
       const contextText = request.trace.contextText ?? "";
       const excerptStatus = request.meta?.excerptStatus ?? "missing";
 
-      const replyText = await callProvider(activeProvider, promptPayload);
+      const providerResponse = await callProvider(activeProvider, request);
+      const replyText = providerResponse.text;
 
       const assistantRecord = persistAssistantMessage({
         deps: replyDeps,
@@ -159,7 +160,8 @@ export function createChatService(deps: {
         contextText,
         excerptStatus,
         promptPayload,
-        promptText
+        promptText,
+        providerResponseRaw: providerResponse.raw
       });
 
       return buildChatResponse({
