@@ -179,7 +179,7 @@ function ProviderModal({ isOpen, onClose, onProvidersChange }: ProviderModalProp
         throw new Error(data?.error?.message || `Failed to load models (${res.status})`);
       }
       const data = (await res.json()) as OpenRouterModelsResponse;
-      setOpenRouterModels(data.models);
+      setOpenRouterModels(data.data);
     } catch (err: unknown) {
       setModelError(err instanceof Error ? err.message : "Failed to load models");
     } finally {
