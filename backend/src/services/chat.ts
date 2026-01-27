@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import { badRequest } from "../lib/errors";
-import { CHAT_PREVIEW_PAGES, CHAT_RECENT_MESSAGES } from "../lib/config";
 import { nowIso } from "../lib/time";
 import type { BooksService } from "./books";
 import type { ProvidersService } from "./providers";
@@ -14,10 +13,7 @@ import type {
 } from "@shared/types/chat";
 import type { ProviderType } from "@shared/types/providers";
 import { normalizeChatSendInput } from "./chat/validation";
-import {
-  createDefaultChatStrategy,
-  type ChatStrategyInput
-} from "./chat/strategy";
+import { createDefaultChatStrategy, type ChatStrategy, type ChatStrategyInput } from "./chat/strategy";
 import { createChatContextLoader } from "./chat/context-loader";
 import {
   buildChatResponse,
@@ -27,9 +23,6 @@ import {
   persistUserMessage,
   requireThread
 } from "./chat/flow";
-
-const DEFAULT_PREVIEW_PAGES = CHAT_PREVIEW_PAGES;
-const DEFAULT_RECENT_MESSAGES = CHAT_RECENT_MESSAGES;
 
 export type ChatService = {
   listThreads: (bookId: string) => ThreadDto[];
@@ -45,25 +38,18 @@ export function createChatService(deps: {
   providers: ProvidersService;
   threads: ThreadsRepository;
   messages: MessagesRepository;
-  previewPages?: number;
-  recentMessages?: number;
-  strategy?: ReturnType<typeof createDefaultChatStrategy>;
+  strategy?: ChatStrategy;
 }): ChatService {
-  const previewPages = Math.max(1, deps.previewPages ?? DEFAULT_PREVIEW_PAGES);
-  const recentMessages = Math.max(1, deps.recentMessages ?? DEFAULT_RECENT_MESSAGES);
   const strategy = deps.strategy ?? createDefaultChatStrategy();
   const replyDeps = {
     books: deps.books,
     providers: deps.providers,
     threads: deps.threads,
-    messages: deps.messages,
-    previewPages,
-    recentMessages
+    messages: deps.messages
   };
   const contextLoader = createChatContextLoader({
     books: deps.books,
-    messages: deps.messages,
-    toMessageDto
+    messages: deps.messages
   });
 
   return {
@@ -110,13 +96,10 @@ export function createChatService(deps: {
     async reply(input: ChatSendRequest): Promise<ChatSendResponse> {
       const { threadId, pageNumber, message } = normalizeChatSendInput(input);
       const { thread, activeProvider } = loadThreadAndProvider(replyDeps, threadId);
-
-      const sectionTitle = deps.books.getSectionTitle(thread.book_id, pageNumber);
       const { now, originalTitle, autoTitle } = persistUserMessage({
         deps: replyDeps,
         thread,
         pageNumber,
-        sectionTitle,
         messageText: message
       });
 
@@ -125,10 +108,7 @@ export function createChatService(deps: {
           threadId: thread.id,
           bookId: thread.book_id,
           pageNumber,
-          sectionTitle,
           messageText: message,
-          previewPages,
-          recentMessages,
           provider: {
             id: activeProvider.id,
             type: activeProvider.provider_type as ProviderType,
@@ -144,8 +124,6 @@ export function createChatService(deps: {
       const assistantRecord = persistAssistantMessage({
         deps: replyDeps,
         thread,
-        pageNumber,
-        sectionTitle,
         reply: replyText,
         meta: request.meta,
         trace: request.trace,

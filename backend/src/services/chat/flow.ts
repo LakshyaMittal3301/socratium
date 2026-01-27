@@ -19,8 +19,6 @@ export type ReplyDeps = {
   providers: ProvidersService;
   threads: ThreadsRepository;
   messages: MessagesRepository;
-  previewPages: number;
-  recentMessages: number;
 };
 
 export function requireThread(threads: ThreadsRepository, threadId: string): ThreadRecord {
@@ -56,10 +54,9 @@ export function persistUserMessage(input: {
   deps: ReplyDeps;
   thread: ThreadRecord;
   pageNumber: number;
-  sectionTitle: string | null;
   messageText: string;
 }): { now: string; originalTitle: string | null; autoTitle: string | null } {
-  const { deps, thread, pageNumber, sectionTitle, messageText } = input;
+  const { deps, thread, pageNumber, messageText } = input;
   const now = nowIso();
   const originalTitle = thread.title;
   deps.messages.insert({
@@ -68,8 +65,7 @@ export function persistUserMessage(input: {
     role: "user",
     content: messageText,
     meta_json: JSON.stringify({
-      page_number: pageNumber,
-      section_name: sectionTitle
+      page_number: pageNumber
     }),
     created_at: now
   });
@@ -104,8 +100,6 @@ export async function callProvider(
 export function persistAssistantMessage(input: {
   deps: ReplyDeps;
   thread: ThreadRecord;
-  pageNumber: number;
-  sectionTitle: string | null;
   reply: string;
   meta?: ChatRequestMeta;
   trace?: ChatPromptTrace;
@@ -114,8 +108,6 @@ export function persistAssistantMessage(input: {
   const {
     deps,
     thread,
-    pageNumber,
-    sectionTitle,
     reply,
     meta,
     trace,

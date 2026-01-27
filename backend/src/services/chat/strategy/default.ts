@@ -1,3 +1,4 @@
+import { CHAT_PREVIEW_PAGES, CHAT_RECENT_MESSAGES } from "../../../lib/config";
 import { formatReadingContext, selectContext } from "../context";
 import { buildPromptPayload, buildPromptText } from "../prompt/build";
 import { SYSTEM_PROMPT } from "../prompt/system";
@@ -10,26 +11,31 @@ export function createDefaultChatStrategy(): ChatStrategy {
       input: ChatStrategyInput,
       loader: ChatContextLoader
     ): Promise<NormalizedChatRequest> {
-      const bookMeta = await loader.getBookMeta(input.bookId);
+      const previewPages = CHAT_PREVIEW_PAGES;
+      const recentMessagesLimit = CHAT_RECENT_MESSAGES;
+      const [bookMeta, sectionTitle] = await Promise.all([
+        loader.getBookMeta(input.bookId),
+        loader.getSectionTitle(input.bookId, input.pageNumber)
+      ]);
       const pages = await selectContext({
         pageNumber: input.pageNumber,
-        previewPages: input.previewPages,
+        previewPages,
         getPageText: (page) => loader.getPageText(input.bookId, page)
       });
       const { readingContext, contextText, excerptStatus } = formatReadingContext({
         bookTitle: bookMeta.title,
-        sectionTitle: input.sectionTitle,
+        sectionTitle,
         pageNumber: input.pageNumber,
         pages
       });
-      const recentMessages = await loader.getRecentMessages(input.threadId, input.recentMessages);
+      const recentMessages = await loader.getRecentMessages(input.threadId, recentMessagesLimit);
       const promptPayload = buildPromptPayload({
         systemPrompt: SYSTEM_PROMPT,
         readingContext,
         messages: recentMessages,
         meta: {
           pageNumber: input.pageNumber,
-          sectionTitle: input.sectionTitle,
+          sectionTitle,
           excerptStatus
         }
       });
@@ -39,7 +45,7 @@ export function createDefaultChatStrategy(): ChatStrategy {
         messages: [{ role: "user", content: promptText }],
         meta: {
           pageNumber: input.pageNumber,
-          sectionTitle: input.sectionTitle,
+          sectionTitle,
           excerptStatus
         },
         trace: {

@@ -1,5 +1,4 @@
 import type { BookMetaResponse, PageTextResponse } from "@shared/types/api";
-import type { ChatMessageDto } from "@shared/types/chat";
 import type { ProviderType } from "@shared/types/providers";
 import type { PromptPayload } from "./prompt";
 
@@ -66,10 +65,7 @@ export type ChatStrategyInput = {
   threadId: string;
   bookId: string;
   pageNumber: number;
-  sectionTitle: string | null;
   messageText: string;
-  previewPages: number;
-  recentMessages: number;
   provider: ChatProviderContext;
 };
 
@@ -77,7 +73,7 @@ export type ChatContextLoader = {
   getRecentMessages: (
     threadId: string,
     limit: number
-  ) => ChatMessageDto[] | Promise<ChatMessageDto[]>;
+  ) => ChatMessage[] | Promise<ChatMessage[]>;
   getBookMeta: (bookId: string) => BookMetaResponse | Promise<BookMetaResponse>;
   getSectionTitle: (
     bookId: string,

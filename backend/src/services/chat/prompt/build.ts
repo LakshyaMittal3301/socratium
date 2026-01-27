@@ -1,4 +1,4 @@
-import type { ChatMessageDto } from "@shared/types/chat";
+import type { ChatMessage } from "../types";
 
 export type PromptPayloadMeta = {
   pageNumber: number;
@@ -9,14 +9,14 @@ export type PromptPayloadMeta = {
 export type PromptPayload = {
   systemPrompt: string;
   readingContext: string;
-  messages: ChatMessageDto[];
+  messages: ChatMessage[];
   meta: PromptPayloadMeta;
 };
 
 export type BuildPromptPayloadInput = {
   systemPrompt: string;
   readingContext: string;
-  messages: ChatMessageDto[];
+  messages: ChatMessage[];
   meta: PromptPayloadMeta;
 };
 

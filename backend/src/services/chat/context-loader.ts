@@ -1,12 +1,11 @@
 import type { BooksService } from "../books";
-import type { MessagesRepository, MessageRecord } from "../../repositories/messages";
-import type { ChatMessageDto } from "@shared/types/chat";
+import type { MessagesRepository } from "../../repositories/messages";
 import type { ChatContextLoader } from "./strategy";
+import type { ChatMessage } from "./types";
 
 type ContextLoaderDeps = {
   books: BooksService;
   messages: MessagesRepository;
-  toMessageDto: (record: MessageRecord) => ChatMessageDto;
 };
 
 export function createChatContextLoader(deps: ContextLoaderDeps): ChatContextLoader {
@@ -15,7 +14,7 @@ export function createChatContextLoader(deps: ContextLoaderDeps): ChatContextLoa
       return deps.messages
         .listRecentByThread(threadId, limit)
         .reverse()
-        .map(deps.toMessageDto);
+        .map(toChatMessage);
     },
     getBookMeta(bookId) {
       return deps.books.getMeta(bookId);
@@ -26,5 +25,12 @@ export function createChatContextLoader(deps: ContextLoaderDeps): ChatContextLoa
     getPageText(bookId, pageNumber) {
       return deps.books.tryGetPageText(bookId, pageNumber);
     }
+  };
+}
+
+function toChatMessage(record: { role: string; content: string }): ChatMessage {
+  return {
+    role: record.role === "assistant" ? "assistant" : "user",
+    content: record.content
   };
 }
