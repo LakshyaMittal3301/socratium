@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import type {
   ChatMessage,
+  ChatProvider,
   ChatProviderAdapterInput,
   ChatRequestParams,
   NormalizedChatResponse
@@ -25,6 +26,11 @@ export async function sendGeminiChat(input: GeminiChatInput): Promise<Normalized
       : response;
   return { text, raw };
 }
+
+export const geminiProvider: ChatProvider = {
+  type: "gemini",
+  send: sendGeminiChat
+};
 
 function buildTextFromMessages(messages: ChatMessage[]): string {
   if (messages.length === 0) return "";

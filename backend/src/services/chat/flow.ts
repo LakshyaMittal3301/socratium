@@ -10,9 +10,8 @@ import type { ProviderRecord } from "../../repositories/providers";
 import type { ChatMessageDto, ChatSendResponse, ThreadUpdate } from "@shared/types/chat";
 import type { ProviderType } from "@shared/types/providers";
 import type { ChatPromptTrace, ChatRequestMeta } from "./types";
-import type { ChatProviderAdapter, NormalizedChatRequest, NormalizedChatResponse } from "./types";
-import { sendGeminiChat } from "./providers/gemini";
-import { sendOpenRouterChat } from "./providers/openrouter";
+import type { NormalizedChatRequest, NormalizedChatResponse } from "./types";
+import { getChatProvider } from "./providers";
 
 export type ReplyDeps = {
   books: BooksService;
@@ -88,9 +87,12 @@ export async function callProvider(
     throw badRequest("Unsupported provider type");
   }
   const apiKey = decryptSecret(activeProvider.api_key_encrypted);
-  const handler = CHAT_HANDLERS[activeProvider.provider_type];
+  const handler = getChatProvider(activeProvider.provider_type);
+  if (!handler) {
+    throw badRequest("Unsupported provider type");
+  }
   try {
-    return await handler({ apiKey, model: activeProvider.model, request });
+    return await handler.send({ apiKey, model: activeProvider.model, request });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     throw new Error(`Provider request failed (${activeProvider.provider_type}): ${message}`);
@@ -143,11 +145,6 @@ export function buildChatResponse(input: {
     thread_update: buildThreadUpdate(threadId, updatedAt, originalTitle, autoTitle)
   };
 }
-
-const CHAT_HANDLERS: Record<ProviderType, ChatProviderAdapter> = {
-  gemini: sendGeminiChat,
-  openrouter: sendOpenRouterChat
-};
 
 function isProviderType(value: string): value is ProviderType {
   return value === "gemini" || value === "openrouter";

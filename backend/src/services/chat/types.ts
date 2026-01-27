@@ -61,6 +61,11 @@ export type ChatProviderAdapter = (
   input: ChatProviderAdapterInput
 ) => Promise<NormalizedChatResponse>;
 
+export type ChatProvider = {
+  type: ProviderType;
+  send: ChatProviderAdapter;
+};
+
 export type ChatStrategyInput = {
   threadId: string;
   bookId: string;

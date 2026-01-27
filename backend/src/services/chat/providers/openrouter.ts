@@ -1,5 +1,6 @@
 import { callOpenRouterModel } from "../../../lib/openrouter";
 import type {
+  ChatProvider,
   ChatProviderAdapterInput,
   ChatRequestParams,
   NormalizedChatResponse
@@ -21,6 +22,11 @@ export async function sendOpenRouterChat(
   const raw = await result.getResponse();
   return { text, raw };
 }
+
+export const openrouterProvider: ChatProvider = {
+  type: "openrouter",
+  send: sendOpenRouterChat
+};
 
 function buildOpenRouterOptions(params?: ChatRequestParams): Record<string, number> {
   if (!params) return {};
