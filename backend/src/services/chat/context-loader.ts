@@ -1,7 +1,6 @@
 import type { BooksService } from "../books";
 import type { MessagesRepository, MessageRecord } from "../../repositories/messages";
 import type { ChatMessageDto } from "@shared/types/chat";
-import { formatReadingContext, selectContext } from "./context";
 import type { ChatContextLoader } from "./strategy";
 
 type ContextLoaderDeps = {
@@ -18,20 +17,14 @@ export function createChatContextLoader(deps: ContextLoaderDeps): ChatContextLoa
         .reverse()
         .map(deps.toMessageDto);
     },
-    getReadingContext({ bookId, pageNumber, sectionTitle, previewPages }) {
-      const bookMeta = deps.books.getMeta(bookId);
-      const pages = selectContext({
-        books: deps.books,
-        bookId,
-        pageNumber,
-        previewPages
-      });
-      return formatReadingContext({
-        bookTitle: bookMeta.title,
-        sectionTitle,
-        pageNumber,
-        pages
-      });
+    getBookMeta(bookId) {
+      return deps.books.getMeta(bookId);
+    },
+    getSectionTitle(bookId, pageNumber) {
+      return deps.books.getSectionTitle(bookId, pageNumber);
+    },
+    getPageText(bookId, pageNumber) {
+      return deps.books.tryGetPageText(bookId, pageNumber);
     }
   };
 }

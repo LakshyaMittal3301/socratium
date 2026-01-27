@@ -1,6 +1,6 @@
+import type { BookMetaResponse, PageTextResponse } from "@shared/types/api";
 import type { ChatMessageDto } from "@shared/types/chat";
 import type { ProviderType } from "@shared/types/providers";
-import type { ReadingContextResult } from "./context";
 import type { PromptPayload } from "./prompt";
 
 export type ChatMessageRole = "system" | "user" | "assistant" | "developer";
@@ -78,11 +78,13 @@ export type ChatContextLoader = {
     threadId: string,
     limit: number
   ) => ChatMessageDto[] | Promise<ChatMessageDto[]>;
-  getReadingContext: (input: {
-    bookId: string;
-    pageNumber: number;
-    sectionTitle: string | null;
-    previewPages: number;
-  }) => ReadingContextResult | Promise<ReadingContextResult>;
-  getSectionTitle?: (bookId: string, pageNumber: number) => string | null | Promise<string | null>;
+  getBookMeta: (bookId: string) => BookMetaResponse | Promise<BookMetaResponse>;
+  getSectionTitle: (
+    bookId: string,
+    pageNumber: number
+  ) => string | null | Promise<string | null>;
+  getPageText: (
+    bookId: string,
+    pageNumber: number
+  ) => PageTextResponse | null | Promise<PageTextResponse | null>;
 };

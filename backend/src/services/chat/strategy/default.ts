@@ -1,3 +1,4 @@
+import { formatReadingContext, selectContext } from "../context";
 import { buildPromptPayload, buildPromptText } from "../prompt/build";
 import { SYSTEM_PROMPT } from "../prompt/system";
 import type { ChatStrategy } from "../strategy";
@@ -9,11 +10,17 @@ export function createDefaultChatStrategy(): ChatStrategy {
       input: ChatStrategyInput,
       loader: ChatContextLoader
     ): Promise<NormalizedChatRequest> {
-      const { readingContext, contextText, excerptStatus } = await loader.getReadingContext({
-        bookId: input.bookId,
+      const bookMeta = await loader.getBookMeta(input.bookId);
+      const pages = await selectContext({
         pageNumber: input.pageNumber,
+        previewPages: input.previewPages,
+        getPageText: (page) => loader.getPageText(input.bookId, page)
+      });
+      const { readingContext, contextText, excerptStatus } = formatReadingContext({
+        bookTitle: bookMeta.title,
         sectionTitle: input.sectionTitle,
-        previewPages: input.previewPages
+        pageNumber: input.pageNumber,
+        pages
       });
       const recentMessages = await loader.getRecentMessages(input.threadId, input.recentMessages);
       const promptPayload = buildPromptPayload({

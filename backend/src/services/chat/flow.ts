@@ -9,8 +9,6 @@ import type { MessagesRepository, MessageRecord } from "../../repositories/messa
 import type { ProviderRecord } from "../../repositories/providers";
 import type { ChatMessageDto, ChatSendResponse, ThreadUpdate } from "@shared/types/chat";
 import type { ProviderType } from "@shared/types/providers";
-import { formatReadingContext, selectContext } from "./context";
-import { buildPromptPayload, buildPromptText, SYSTEM_PROMPT } from "./prompt";
 import type { ChatPromptTrace, ChatRequestMeta } from "./types";
 import type { ChatProviderAdapter, NormalizedChatRequest, NormalizedChatResponse } from "./types";
 import { sendGeminiChat } from "./providers/gemini";
@@ -84,53 +82,6 @@ export function persistUserMessage(input: {
   }
 
   return { now, originalTitle, autoTitle };
-}
-
-export function buildChatPrompt(input: {
-  deps: ReplyDeps;
-  thread: ThreadRecord;
-  pageNumber: number;
-  sectionTitle: string | null;
-  toMessageDto: (record: MessageRecord) => ChatMessageDto;
-}): {
-  promptPayload: ReturnType<typeof buildPromptPayload>;
-  promptText: string;
-  contextText: string;
-  excerptStatus: "available" | "missing";
-} {
-  const { deps, thread, pageNumber, sectionTitle, toMessageDto } = input;
-  const bookMeta = deps.books.getMeta(thread.book_id);
-  const pages = selectContext({
-    books: deps.books,
-    bookId: thread.book_id,
-    pageNumber,
-    previewPages: deps.previewPages
-  });
-  const { contextText, excerptStatus, readingContext } = formatReadingContext({
-    bookTitle: bookMeta.title,
-    sectionTitle,
-    pageNumber,
-    pages
-  });
-
-  const recent = deps.messages
-    .listRecentByThread(thread.id, deps.recentMessages)
-    .reverse()
-    .map(toMessageDto);
-
-  const promptPayload = buildPromptPayload({
-    systemPrompt: SYSTEM_PROMPT,
-    readingContext,
-    messages: recent,
-    meta: {
-      pageNumber,
-      sectionTitle,
-      excerptStatus
-    }
-  });
-  const promptText = buildPromptText(promptPayload);
-
-  return { promptPayload, promptText, contextText, excerptStatus };
 }
 
 export async function callProvider(
