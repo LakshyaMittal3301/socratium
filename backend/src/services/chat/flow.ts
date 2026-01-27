@@ -10,7 +10,7 @@ import type { ProviderRecord } from "../../repositories/providers";
 import type { ChatMessageDto, ChatSendResponse, ThreadUpdate } from "@shared/types/chat";
 import type { ProviderType } from "@shared/types/providers";
 import { formatReadingContext, selectContext } from "./context";
-import { buildPrompt, SYSTEM_PROMPT } from "./prompt";
+import { buildPromptPayload, buildPromptText, SYSTEM_PROMPT } from "./prompt";
 import { sendGeminiChat } from "./providers/gemini";
 import { sendOpenRouterChat } from "./providers/openrouter";
 
@@ -90,7 +90,12 @@ export function buildChatPrompt(input: {
   pageNumber: number;
   sectionTitle: string | null;
   toMessageDto: (record: MessageRecord) => ChatMessageDto;
-}): { prompt: string; contextText: string; excerptStatus: "available" | "missing" } {
+}): {
+  promptPayload: ReturnType<typeof buildPromptPayload>;
+  promptText: string;
+  contextText: string;
+  excerptStatus: "available" | "missing";
+} {
   const { deps, thread, pageNumber, sectionTitle, toMessageDto } = input;
   const bookMeta = deps.books.getMeta(thread.book_id);
   const pages = selectContext({
@@ -111,13 +116,19 @@ export function buildChatPrompt(input: {
     .reverse()
     .map(toMessageDto);
 
-  const prompt = buildPrompt({
+  const promptPayload = buildPromptPayload({
     systemPrompt: SYSTEM_PROMPT,
     readingContext,
-    messages: recent
+    messages: recent,
+    meta: {
+      pageNumber,
+      sectionTitle,
+      excerptStatus
+    }
   });
+  const promptText = buildPromptText(promptPayload);
 
-  return { prompt, contextText, excerptStatus };
+  return { promptPayload, promptText, contextText, excerptStatus };
 }
 
 export async function callProvider(activeProvider: ProviderRecord, prompt: string): Promise<string> {

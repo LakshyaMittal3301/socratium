@@ -110,7 +110,7 @@ export function createChatService(deps: {
         messageText: message
       });
 
-      const { prompt, contextText, excerptStatus } = buildChatPrompt({
+      const { promptText, contextText, excerptStatus } = buildChatPrompt({
         deps: replyDeps,
         thread,
         pageNumber,
@@ -118,7 +118,7 @@ export function createChatService(deps: {
         toMessageDto
       });
 
-      const replyText = await callProvider(activeProvider, prompt);
+      const replyText = await callProvider(activeProvider, promptText);
 
       const assistantRecord = persistAssistantMessage({
         deps: replyDeps,
