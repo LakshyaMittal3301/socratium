@@ -110,6 +110,25 @@ function App() {
     }
   }
 
+  async function handleDeleteBook(
+    bookId: string
+  ): Promise<{ ok: boolean; error?: string }> {
+    try {
+      const res = await fetch(`/api/books/${bookId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error?.message || `Delete failed (${res.status})`);
+      }
+      await loadBooks();
+      return { ok: true };
+    } catch (err: unknown) {
+      return {
+        ok: false,
+        error: err instanceof Error ? err.message : "Delete failed"
+      };
+    }
+  }
+
   function handleOpenBook(bookId: string) {
     setActiveBookId(bookId);
     setActiveView("reader");
@@ -167,6 +186,7 @@ function App() {
         error={error}
         onUpload={handleUpload}
         onOpenBook={handleOpenBook}
+        onDeleteBook={handleDeleteBook}
         showUpload={showUpload}
         onOpenUpload={() => setShowUpload(true)}
         onCloseUpload={() => setShowUpload(false)}

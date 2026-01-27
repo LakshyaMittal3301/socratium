@@ -37,6 +37,8 @@
 .library-book__footer {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   box-sizing: border-box;
   padding-top: 0.35rem;
   border-top: 1px solid var(--border-muted);

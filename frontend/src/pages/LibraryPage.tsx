@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import type { UploadProps } from "antd";
-import { Button, Card, Col, Empty, Modal, Row, Space, Typography, Upload } from "antd";
+import type { MenuProps, UploadProps } from "antd";
+import { Button, Card, Col, Dropdown, Empty, Modal, Row, Space, Typography, Upload } from "antd";
+import { EllipsisOutlined } from "@ant-design/icons";
 import type { BookDto } from "@shared/types/api";
 import DebugPanel from "../components/DebugPanel";
 import BookCover from "../components/BookCover";
@@ -13,6 +14,7 @@ type LibraryPageProps = {
   error: string | null;
   onUpload: (file: File) => Promise<boolean>;
   onOpenBook: (bookId: string) => void;
+  onDeleteBook: (bookId: string) => Promise<{ ok: boolean; error?: string }>;
   showUpload: boolean;
   onOpenUpload: () => void;
   onCloseUpload: () => void;
@@ -26,6 +28,7 @@ function LibraryPage({
   error,
   onUpload,
   onOpenBook,
+  onDeleteBook,
   showUpload,
   onOpenUpload,
   onCloseUpload,
@@ -73,6 +76,37 @@ function LibraryPage({
     onOpenBook(bookId);
   }
 
+  function handleDeleteConfirm(book: BookDto) {
+    Modal.confirm({
+      title: `Delete "${book.title}"?`,
+      content: "This permanently deletes the book, its chats, and files.",
+      okText: "Delete",
+      okButtonProps: { danger: true },
+      cancelText: "Cancel",
+      async onOk() {
+        const result = await onDeleteBook(book.id);
+        if (!result.ok) {
+          Modal.error({
+            title: "Delete failed",
+            content: result.error ?? "Something went wrong while deleting this book."
+          });
+        }
+      }
+    });
+  }
+
+  function buildBookMenu(book: BookDto): MenuProps {
+    return {
+      items: [{ key: "delete", label: "Delete", danger: true }],
+      onClick: ({ key, domEvent }) => {
+        domEvent.stopPropagation();
+        if (key === "delete") {
+          handleDeleteConfirm(book);
+        }
+      }
+    };
+  }
+
   return (
     <div className="library">
       {books.length === 0 ? (
@@ -112,6 +146,20 @@ function LibraryPage({
                   <Typography.Text type="secondary" className="library-book__date">
                     Uploaded: {formatDate(book.created_at)}
                   </Typography.Text>
+                  <Dropdown
+                    trigger={["click"]}
+                    placement="bottomRight"
+                    menu={buildBookMenu(book)}
+                  >
+                    <Button
+                      type="text"
+                      size="small"
+                      aria-label={`More options for ${book.title}`}
+                      icon={<EllipsisOutlined />}
+                      onClick={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => event.stopPropagation()}
+                    />
+                  </Dropdown>
                 </div>
               </div>
             </Card>
