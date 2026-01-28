@@ -9,7 +9,7 @@ export async function testOpenRouterKey(input: TestOpenRouterKeyInput): Promise<
   const result = await callOpenRouterModel({
     apiKey: input.apiKey,
     model: input.model,
-    messages: [{ role: "user", content: "Reply with the single word OK." }]
+    input: [{ role: "user", content: "Reply with the single word OK." }]
   });
   const text = await result.getText();
   return text.trim() || "OK";

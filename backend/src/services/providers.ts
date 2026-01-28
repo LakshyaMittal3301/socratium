@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { nowIso } from "../lib/time";
 import { encryptSecret } from "../lib/secrets";
-import { OPENROUTER_BASE_URL, createOpenRouterClient } from "../lib/openrouter";
+import { createOpenRouterClient } from "../lib/openrouter";
 import { badRequest, notFound } from "../lib/errors";
 import type { ProviderInsert, ProvidersRepository, ProviderRecord } from "../repositories/providers";
 import type { OpenRouterModel, ProviderDto, ProviderType } from "@shared/types/providers";
@@ -12,7 +12,6 @@ export type CreateProviderInput = {
   name: string;
   model: string;
   apiKey: string;
-  baseUrl?: string | null;
 };
 
 export type TestProviderInput = {
@@ -62,7 +61,6 @@ export function createProvidersService(repos: {
           providerType,
           model,
           apiKey,
-          baseUrl: input.baseUrl ?? null,
           now
         })
       );
@@ -130,7 +128,6 @@ function toDto(record: ProviderRecord): ProviderDto {
     id: record.id,
     name: record.name,
     provider_type: record.provider_type as ProviderType,
-    base_url: record.base_url ?? null,
     model: record.model,
     is_active: record.is_active === 1,
     created_at: record.created_at,
@@ -163,7 +160,6 @@ type ProviderInsertInput = {
   providerType: ProviderType;
   model: string;
   apiKey: string;
-  baseUrl: string | null;
   now: string;
 };
 
@@ -172,8 +168,7 @@ function toProviderInsert(input: ProviderInsertInput): ProviderInsert {
     id: input.id,
     name: input.name,
     provider_type: input.providerType,
-    base_url:
-      input.baseUrl ?? (input.providerType === "openrouter" ? OPENROUTER_BASE_URL : null),
+    base_url: null,
     model: input.model,
     api_key_encrypted: encryptSecret(input.apiKey),
     is_active: 0,

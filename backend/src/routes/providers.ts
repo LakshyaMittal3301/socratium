@@ -50,8 +50,7 @@ export function registerProviderRoutes(app: FastifyInstance): void {
         providerType: body.provider_type,
         name: body.name,
         model: body.model,
-        apiKey: body.apiKey,
-        baseUrl: body.baseUrl ?? null
+        apiKey: body.apiKey
       });
     }
   );

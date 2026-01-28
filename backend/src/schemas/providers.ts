@@ -4,7 +4,6 @@ export const providerSchema = {
     id: { type: "string" },
     name: { type: "string" },
     provider_type: { type: "string" },
-    base_url: { anyOf: [{ type: "string" }, { type: "null" }] },
     model: { type: "string" },
     is_active: { type: "boolean" },
     created_at: { type: "string" },
@@ -14,7 +13,6 @@ export const providerSchema = {
     "id",
     "name",
     "provider_type",
-    "base_url",
     "model",
     "is_active",
     "created_at",
@@ -33,8 +31,7 @@ export const createProviderSchema = {
     provider_type: { type: "string" },
     name: { type: "string" },
     model: { type: "string" },
-    apiKey: { type: "string" },
-    baseUrl: { anyOf: [{ type: "string" }, { type: "null" }] }
+    apiKey: { type: "string" }
   },
   required: ["provider_type", "name", "model", "apiKey"]
 };
