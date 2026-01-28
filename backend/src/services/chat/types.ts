@@ -1,6 +1,5 @@
 import type { BookMetaResponse, PageTextResponse } from "@shared/types/api";
 import type { ProviderType } from "@shared/types/providers";
-import type { PromptPayload } from "./prompt";
 
 export type ChatMessageRole = "system" | "user" | "assistant" | "developer";
 
@@ -33,7 +32,7 @@ export type ChatRequestMeta = {
 
 export type ChatPromptTrace = {
   promptText?: string;
-  promptPayload?: PromptPayload;
+  promptPayload?: unknown;
   readingContext?: string;
   contextText?: string;
   excerptStatus?: "available" | "missing";
