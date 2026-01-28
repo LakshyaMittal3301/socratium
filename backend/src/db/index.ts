@@ -53,31 +53,12 @@ export function initDb(): void {
       WHERE is_active = 1;
 
     CREATE TABLE IF NOT EXISTS chat_thread (
-      id TEXT PRIMARY KEY,
-      book_id TEXT NOT NULL,
-      title TEXT,
-      provider_id TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      FOREIGN KEY(book_id) REFERENCES book(id) ON DELETE CASCADE,
-      FOREIGN KEY(provider_id) REFERENCES ai_provider(id)
+      id TEXT PRIMARY KEY
     );
-
-    CREATE INDEX IF NOT EXISTS chat_thread_book_created_at
-      ON chat_thread(book_id, created_at);
 
     CREATE TABLE IF NOT EXISTS chat_message (
-      id TEXT PRIMARY KEY,
-      thread_id TEXT NOT NULL,
-      role TEXT NOT NULL,
-      content TEXT NOT NULL,
-      meta_json TEXT,
-      created_at TEXT NOT NULL,
-      FOREIGN KEY(thread_id) REFERENCES chat_thread(id) ON DELETE CASCADE
+      id TEXT PRIMARY KEY
     );
-
-    CREATE INDEX IF NOT EXISTS chat_message_thread_created_at
-      ON chat_message(thread_id, created_at);
   `);
 
   if (currentVersion !== SCHEMA_VERSION) {

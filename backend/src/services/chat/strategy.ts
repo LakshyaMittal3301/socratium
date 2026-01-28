@@ -8,10 +8,6 @@ export type {
   ChatContextLoader,
   ChatMessage,
   ChatMessageRole,
-  ChatProviderContext,
-  ChatPromptTrace,
-  ChatRequestMeta,
-  ChatRequestParams,
   ChatStrategyInput,
   NormalizedChatRequest,
   NormalizedChatResponse

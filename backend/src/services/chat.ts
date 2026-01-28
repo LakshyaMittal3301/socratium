@@ -3,26 +3,18 @@ import { badRequest } from "../lib/errors";
 import { nowIso } from "../lib/time";
 import type { BooksService } from "./books";
 import type { ProvidersService } from "./providers";
-import type { ThreadsRepository, ThreadRecord } from "../repositories/threads";
-import type { MessagesRepository, MessageRecord } from "../repositories/messages";
+import type { ThreadsRepository } from "../repositories/threads";
+import type { MessagesRepository } from "../repositories/messages";
 import type {
   ChatMessageDto,
   ChatSendRequest,
   ChatSendResponse,
   ThreadDto
 } from "@shared/types/chat";
-import type { ProviderType } from "@shared/types/providers";
 import { normalizeChatSendInput } from "./chat/validation";
-import { createDefaultChatStrategy, type ChatStrategy, type ChatStrategyInput } from "./chat/strategy";
+import { createDefaultChatStrategy, type ChatStrategy } from "./chat/strategy";
 import { createChatContextLoader } from "./chat/context-loader";
-import {
-  buildChatResponse,
-  callProvider,
-  loadThreadAndProvider,
-  persistAssistantMessage,
-  persistUserMessage,
-  requireThread
-} from "./chat/flow";
+import { callProvider } from "./chat/flow";
 
 export type ChatService = {
   listThreads: (bookId: string) => ThreadDto[];
@@ -41,127 +33,75 @@ export function createChatService(deps: {
   strategy?: ChatStrategy;
 }): ChatService {
   const strategy = deps.strategy ?? createDefaultChatStrategy();
-  const replyDeps = {
-    books: deps.books,
-    providers: deps.providers,
-    threads: deps.threads,
-    messages: deps.messages
-  };
-  const contextLoader = createChatContextLoader({
-    books: deps.books,
-    messages: deps.messages
-  });
+  const contextLoader = createChatContextLoader();
 
   return {
     listThreads(bookId: string): ThreadDto[] {
-      deps.books.getMeta(bookId);
-      return deps.threads.listByBook(bookId).map(toThreadDto);
+      void bookId;
+      return [];
     },
     createThread(bookId: string): ThreadDto {
-      deps.books.getMeta(bookId);
-      const provider = deps.providers.getActiveRecord();
-      if (!provider) {
-        throw badRequest("No active AI provider configured");
-      }
-
       const now = nowIso();
-      const record = deps.threads.insert({
+      return {
         id: crypto.randomUUID(),
         book_id: bookId,
         title: null,
-        provider_id: provider.id,
+        provider_id: "",
+        provider_name: null,
+        provider_type: null,
+        model: null,
         created_at: now,
         updated_at: now
-      });
-      return toThreadDto(record);
+      };
     },
     renameThread(threadId: string, title: string): ThreadDto {
-      const trimmed = title.trim();
-      if (!trimmed) {
-        throw badRequest("Title is required");
-      }
-      const thread = requireThread(deps.threads, threadId);
-      deps.threads.updateTitle(thread.id, trimmed, nowIso());
-      const updated = requireThread(deps.threads, threadId);
-      return toThreadDto(updated);
+      const now = nowIso();
+      return {
+        id: threadId,
+        book_id: "",
+        title,
+        provider_id: "",
+        provider_name: null,
+        provider_type: null,
+        model: null,
+        created_at: now,
+        updated_at: now
+      };
     },
     removeThread(threadId: string): void {
-      requireThread(deps.threads, threadId);
-      deps.threads.remove(threadId);
+      void threadId;
     },
     listMessages(threadId: string): ChatMessageDto[] {
-      requireThread(deps.threads, threadId);
-      return deps.messages.listByThread(threadId).map(toMessageDto);
+      void threadId;
+      return [];
     },
     async reply(input: ChatSendRequest): Promise<ChatSendResponse> {
-      const { threadId, pageNumber, message } = normalizeChatSendInput(input);
-      const { thread, activeProvider } = loadThreadAndProvider(replyDeps, threadId);
-      const { now, originalTitle, autoTitle } = persistUserMessage({
-        deps: replyDeps,
-        thread,
-        pageNumber,
-        messageText: message
-      });
+      const { threadId, message } = normalizeChatSendInput(input);
+      const activeProvider = deps.providers.getActiveRecord();
+      if (!activeProvider) {
+        throw badRequest("No active AI provider configured");
+      }
 
       const request = await strategy.buildRequest(
         {
-          threadId: thread.id,
-          bookId: thread.book_id,
-          pageNumber,
-          messageText: message,
-          provider: {
-            id: activeProvider.id,
-            type: activeProvider.provider_type as ProviderType,
-            model: activeProvider.model,
-            name: activeProvider.name
-          }
-        } satisfies ChatStrategyInput,
+          messageText: message
+        },
         contextLoader
       );
       const providerResponse = await callProvider(activeProvider, request);
-      const replyText = providerResponse.text;
+      const now = nowIso();
+      const assistantMessage: ChatMessageDto = {
+        id: crypto.randomUUID(),
+        thread_id: threadId,
+        role: "assistant",
+        content: providerResponse.text,
+        created_at: now
+      };
 
-      const assistantRecord = persistAssistantMessage({
-        deps: replyDeps,
-        thread,
-        reply: replyText,
-        meta: request.meta,
-        trace: request.trace,
-        providerResponseRaw: providerResponse.raw
-      });
-
-      return buildChatResponse({
-        assistantRecord,
-        threadId: thread.id,
-        updatedAt: now,
-        originalTitle,
-        autoTitle,
-        toMessageDto
-      });
+      return {
+        message: assistantMessage,
+        thread_update: null
+      };
     }
-  };
-}
-
-function toThreadDto(record: ThreadRecord): ThreadDto {
-  return {
-    id: record.id,
-    book_id: record.book_id,
-    title: record.title,
-    provider_id: record.provider_id,
-    provider_name: record.provider_name,
-    provider_type: record.provider_type ? (record.provider_type as ProviderType) : null,
-    model: record.model,
-    created_at: record.created_at,
-    updated_at: record.updated_at
-  };
-}
-
-function toMessageDto(record: MessageRecord): ChatMessageDto {
-  return {
-    id: record.id,
-    thread_id: record.thread_id,
-    role: record.role === "assistant" ? "assistant" : "user",
-    content: record.content,
-    created_at: record.created_at
   };
 }

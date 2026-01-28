@@ -1,23 +1,9 @@
 export type ThreadRecord = {
   id: string;
-  book_id: string;
-  title: string | null;
-  provider_id: string;
-  provider_name: string | null;
-  provider_type: string | null;
-  model: string | null;
-  provider_is_active: number | null;
-  created_at: string;
-  updated_at: string;
 };
 
 export type ThreadInsert = {
   id: string;
-  book_id: string;
-  title?: string | null;
-  provider_id: string;
-  created_at: string;
-  updated_at: string;
 };
 
 export type ThreadsRepository = {
@@ -29,71 +15,39 @@ export type ThreadsRepository = {
   remove: (id: string) => void;
 };
 
-const THREAD_FIELDS = `
-  t.id,
-  t.book_id,
-  t.title,
-  t.provider_id,
-  t.created_at,
-  t.updated_at,
-  p.name as provider_name,
-  p.provider_type as provider_type,
-  p.model as model,
-  p.is_active as provider_is_active
-`;
+const THREAD_FIELDS = "id";
 
 export function createThreadsRepository(db: import("better-sqlite3").Database): ThreadsRepository {
   return {
     insert(record: ThreadInsert): ThreadRecord {
-      db.prepare(
-        `INSERT INTO chat_thread (id, book_id, title, provider_id, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)`
-      ).run(
-        record.id,
-        record.book_id,
-        record.title ?? null,
-        record.provider_id,
-        record.created_at,
-        record.updated_at
-      );
+      db.prepare("INSERT INTO chat_thread (id) VALUES (?)").run(record.id);
       return (
-        db.prepare(`SELECT ${THREAD_FIELDS} FROM chat_thread t LEFT JOIN ai_provider p ON p.id = t.provider_id WHERE t.id = ?`).get(record.id) as
+        db.prepare(`SELECT ${THREAD_FIELDS} FROM chat_thread WHERE id = ?`).get(record.id) as
           | ThreadRecord
           | undefined
       )!;
     },
     listByBook(bookId: string): ThreadRecord[] {
+      void bookId;
       return db
-        .prepare(
-          `SELECT ${THREAD_FIELDS}
-           FROM chat_thread t
-           LEFT JOIN ai_provider p ON p.id = t.provider_id
-           WHERE t.book_id = ?
-           ORDER BY t.updated_at DESC, t.created_at DESC`
-        )
-        .all(bookId) as ThreadRecord[];
+        .prepare(`SELECT ${THREAD_FIELDS} FROM chat_thread`)
+        .all() as ThreadRecord[];
     },
     getById(id: string): ThreadRecord | null {
       return (
         db
-          .prepare(
-            `SELECT ${THREAD_FIELDS}
-             FROM chat_thread t
-             LEFT JOIN ai_provider p ON p.id = t.provider_id
-             WHERE t.id = ?`
-          )
+          .prepare(`SELECT ${THREAD_FIELDS} FROM chat_thread WHERE id = ?`)
           .get(id) as ThreadRecord | undefined
       ) ?? null;
     },
     updateTitle(id: string, title: string, updatedAt: string): void {
-      db.prepare("UPDATE chat_thread SET title = ?, updated_at = ? WHERE id = ?").run(
-        title,
-        updatedAt,
-        id
-      );
+      void id;
+      void title;
+      void updatedAt;
     },
     touchUpdatedAt(id: string, updatedAt: string): void {
-      db.prepare("UPDATE chat_thread SET updated_at = ? WHERE id = ?").run(updatedAt, id);
+      void id;
+      void updatedAt;
     },
     remove(id: string): void {
       db.prepare("DELETE FROM chat_thread WHERE id = ?").run(id);
