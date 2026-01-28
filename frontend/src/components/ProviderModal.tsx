@@ -26,16 +26,11 @@ function ProviderModal({ isOpen, onClose, onProvidersChange }: ProviderModalProp
   const [testMessage, setTestMessage] = useState<string | null>(null);
   const [modelError, setModelError] = useState<string | null>(null);
   const [openRouterModels, setOpenRouterModels] = useState<OpenRouterModel[]>([]);
-  const [providerType, setProviderType] = useState<ProviderType>("gemini");
+  const providerType: ProviderType = "openrouter";
   const [name, setName] = useState("");
-  const [model, setModel] = useState("gemini-3-flash-preview");
+  const [model, setModel] = useState("openai/gpt-5.2");
   const [apiKey, setApiKey] = useState("");
   const modelListId = "openrouter-models";
-
-  const defaultModelByType: Record<ProviderType, string> = {
-    gemini: "gemini-3-flash-preview",
-    openrouter: "openai/gpt-5.2"
-  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -43,11 +38,10 @@ function ProviderModal({ isOpen, onClose, onProvidersChange }: ProviderModalProp
   }, [isOpen]);
 
   useEffect(() => {
-    setModel(defaultModelByType[providerType]);
     setOpenRouterModels([]);
     setModelError(null);
     setTestMessage(null);
-  }, [providerType]);
+  }, []);
 
   async function loadProviders() {
     setLoading(true);
@@ -203,7 +197,6 @@ function ProviderModal({ isOpen, onClose, onProvidersChange }: ProviderModalProp
     >
       <div className="provider-modal__layout">
         <ProviderForm
-          providerType={providerType}
           name={name}
           model={model}
           apiKey={apiKey}
@@ -215,7 +208,6 @@ function ProviderModal({ isOpen, onClose, onProvidersChange }: ProviderModalProp
           saving={saving}
           testing={testing}
           modelListId={modelListId}
-          onProviderTypeChange={(value) => setProviderType(value)}
           onNameChange={setName}
           onModelChange={setModel}
           onApiKeyChange={setApiKey}

@@ -1,8 +1,7 @@
-import { Alert, Button, Input, Select, Space, Typography } from "antd";
-import type { OpenRouterModel, ProviderType } from "@shared/types/providers";
+import { Alert, Button, Input, Space, Typography } from "antd";
+import type { OpenRouterModel } from "@shared/types/providers";
 
 type ProviderFormProps = {
-  providerType: ProviderType;
   name: string;
   model: string;
   apiKey: string;
@@ -14,7 +13,6 @@ type ProviderFormProps = {
   saving: boolean;
   testing: boolean;
   modelListId: string;
-  onProviderTypeChange: (value: ProviderType) => void;
   onNameChange: (value: string) => void;
   onModelChange: (value: string) => void;
   onApiKeyChange: (value: string) => void;
@@ -24,7 +22,6 @@ type ProviderFormProps = {
 };
 
 function ProviderForm({
-  providerType,
   name,
   model,
   apiKey,
@@ -36,7 +33,6 @@ function ProviderForm({
   saving,
   testing,
   modelListId,
-  onProviderTypeChange,
   onNameChange,
   onModelChange,
   onApiKeyChange,
@@ -55,48 +51,32 @@ function ProviderForm({
       <form onSubmit={onSubmit} className="provider-modal__form">
         <div className="provider-modal__field">
           <Typography.Text strong>Provider</Typography.Text>
-          <Select
-            value={providerType}
-            onChange={onProviderTypeChange}
-            options={[
-              { value: "gemini", label: "Gemini" },
-              { value: "openrouter", label: "OpenRouter" }
-            ]}
-            size="middle"
-          />
+          <Typography.Text>OpenRouter</Typography.Text>
         </div>
         <div className="provider-modal__field">
           <Typography.Text strong>Name</Typography.Text>
           <Input
             value={name}
             onChange={(event) => onNameChange(event.target.value)}
-            placeholder={providerType === "openrouter" ? "My OpenRouter" : "My Gemini"}
+            placeholder="My OpenRouter"
             size="middle"
           />
         </div>
         <div className="provider-modal__field">
           <Typography.Text strong>Model</Typography.Text>
-          {providerType === "openrouter" ? (
-            <Space className="provider-modal__row" align="start">
-              <Input
-                list={modelListId}
-                value={model}
-                onChange={(event) => onModelChange(event.target.value)}
-                placeholder="openai/gpt-5.2"
-                size="middle"
-              />
-              <Button size="middle" onClick={onLoadModels} loading={modelsLoading}>
-                Load models
-              </Button>
-            </Space>
-          ) : (
+          <Space className="provider-modal__row" align="start">
             <Input
+              list={modelListId}
               value={model}
               onChange={(event) => onModelChange(event.target.value)}
+              placeholder="openai/gpt-5.2"
               size="middle"
             />
-          )}
-          {providerType === "openrouter" && openRouterModels.length > 0 && (
+            <Button size="middle" onClick={onLoadModels} loading={modelsLoading}>
+              Load models
+            </Button>
+          </Space>
+          {openRouterModels.length > 0 && (
             <datalist id={modelListId}>
               {openRouterModels.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -105,13 +85,11 @@ function ProviderForm({
               ))}
             </datalist>
           )}
-          {providerType === "openrouter" && (
-            <Typography.Text type="secondary" className="provider-modal__note">
-              {openRouterModels.length > 0
-                ? `${openRouterModels.length} models loaded.`
-                : "Load models to browse the OpenRouter catalog."}
-            </Typography.Text>
-          )}
+          <Typography.Text type="secondary" className="provider-modal__note">
+            {openRouterModels.length > 0
+              ? `${openRouterModels.length} models loaded.`
+              : "Load models to browse the OpenRouter catalog."}
+          </Typography.Text>
           {modelError && (
             <Typography.Text type="danger" className="provider-modal__note">
               {modelError}
@@ -123,11 +101,7 @@ function ProviderForm({
           <Input.Password
             value={apiKey}
             onChange={(event) => onApiKeyChange(event.target.value)}
-            placeholder={
-              providerType === "openrouter"
-                ? "Paste your OpenRouter API key"
-                : "Paste your Gemini API key"
-            }
+            placeholder="Paste your OpenRouter API key"
             size="middle"
           />
         </div>

@@ -26,5 +26,5 @@ export async function callProvider(
 }
 
 function isProviderType(value: string): value is ProviderType {
-  return value === "gemini" || value === "openrouter";
+  return value === "openrouter";
 }

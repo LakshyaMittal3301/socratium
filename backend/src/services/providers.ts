@@ -5,7 +5,6 @@ import { OPENROUTER_BASE_URL, createOpenRouterClient } from "../lib/openrouter";
 import { badRequest, notFound } from "../lib/errors";
 import type { ProviderInsert, ProvidersRepository, ProviderRecord } from "../repositories/providers";
 import type { OpenRouterModel, ProviderDto, ProviderType } from "@shared/types/providers";
-import { testGeminiKey } from "./providers/gemini";
 import { testOpenRouterKey } from "./providers/openrouter";
 
 export type CreateProviderInput = {
@@ -34,12 +33,11 @@ export type ProvidersService = {
   listOpenRouterModels: (apiKey: string) => Promise<OpenRouterModel[]>;
 };
 
-const SUPPORTED_PROVIDER_TYPES: ProviderType[] = ["gemini", "openrouter"];
+const SUPPORTED_PROVIDER_TYPES: ProviderType[] = ["openrouter"];
 const TEST_KEY_HANDLERS: Record<
   ProviderType,
   (input: { apiKey: string; model: string }) => Promise<string>
 > = {
-  gemini: testGeminiKey,
   openrouter: testOpenRouterKey
 };
 

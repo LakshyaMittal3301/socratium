@@ -10,7 +10,6 @@
   "dependencies": {
     "@fastify/multipart": "8.2.0",
     "@fastify/static": "7.0.4",
-    "@google/genai": "^1.16.0",
     "@openrouter/sdk": "^0.3.15",
     "better-sqlite3": "11.5.0",
     "fastify": "4.28.1",

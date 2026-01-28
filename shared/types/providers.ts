@@ -1,4 +1,4 @@
-export type ProviderType = "gemini" | "openrouter";
+export type ProviderType = "openrouter";
 
 export type ProviderDto = {
   id: string;
